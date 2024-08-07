@@ -1,0 +1,567 @@
+<html lang="ru">
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конкурс ЛПП</title>
+    <link rel="icon" type="image/png" href="logo_cup.png"/>
+    <!-- Подключение Bootstrap 5 CSS -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <!-- Подключение Font Awesome для иконок -->
+    <link rel="stylesheet" href="all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+        .counter {
+            font-size: 18px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #f8f9fa;
+            padding: 15px;
+        }
+        .form-check-input {
+            display: none; /* Скрываем стандартные чекбоксы */
+        }
+        .form-check-label {
+            cursor: pointer;
+            font-size: 24px; /* Размер иконок */
+            transition: color 0.3s; /* Плавный переход цвета */
+        }
+        .form-check-label:hover {
+            color: #75b798; /* Цвет при наведении */
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between; /* Разделяем элементы по краям */
+            align-items: center; /* Выравниваем по центру по вертикали */
+            margin-bottom: 10px; /* Отступ между пунктами меню */
+        }
+        .content-section {
+            display: none; /* Скрываем все секции контента по умолчанию */
+        }
+        .btn-custom {
+            width: 100%; /* Кнопки на всю ширину */
+            text-align: left; /* Текст слева */
+        }
+        /*.form-check-label i.fas.fa-heart:hover {*/
+        /*    color: #146c43;*/
+        /*}*/
+        /*.form-check-label i.fas.fa-times-circle:hover {*/
+        /*    color: indianred;*/
+        /*}*/
+        .checked {
+            color: #15dc86; /* Цвет иконки при нажатии */
+        }
+        .checked_red {
+            color: #d82851; /* Цвет иконки при нажатии */
+        }
+    </style>
+    <script>
+        // Переменные для состояния чекбоксов
+
+        let checkboxes = Array.from({ length: 30 }, () => [false, false]);
+
+        function updateCheckboxes() {
+            checkboxes.forEach((checkbox, index) => {
+                document.getElementById(`checkbox${index + 1}_1`).checked = checkbox[0];
+                document.getElementById(`checkbox${index + 1}_2`).checked = checkbox[1];
+            });
+        }
+
+        function handleCheckboxChange(checkbox) {
+            const index = parseInt(checkbox.id.match(/\d+/)[0]) - 1;
+            const subIndex = checkbox.id.endsWith('1') ? 0 : 1;
+            checkboxes[index][subIndex] = checkbox.checked;
+
+            updateCheckboxIcons(checkbox);
+            updateCount();
+        }
+
+        function updateCheckboxIcons(checkbox) {
+            const label = document.querySelector(`label[for="${checkbox.id}"]`);
+            if (checkbox.checked) {
+                label.classList.add(checkbox.id.endsWith('2') ? 'checked_red' : 'checked');
+            } else {
+                label.classList.remove('checked');
+                label.classList.remove('checked_red');
+            }
+        }
+
+        function updateCount() {
+            let count = countTrue(checkboxes);
+            document.getElementById('count').innerText = `${count}`;
+        }
+
+        // Функция для подсчета количества true
+        function countTrue(checkboxes) {
+            let count = 0;
+            checkboxes.forEach(pair => {
+                if (pair[0] === true) {
+                        count++;
+                    }
+                });
+            return count;
+        }
+
+        function showContent(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        window.onload = function() {
+            updateCheckboxes(); // Устанавливаем состояние чекбоксов при загрузке страницы
+            updateCount(); // Устанавливаем счетчик
+            showContent('content1'); // Показываем первую секцию контента по умолчанию
+        };
+    </script>
+</head>
+<body>
+<header class="bg-success-subtle fixed-top" style="background-color: #15dc86; height: 55px;">
+    <div class="container d-flex justify-content-between align-items-center py-2">
+    <div class="logo"><img src="logo_cup.png" alt="logo" height="40px" width="40px"> Лучший по профессии</div>
+        <div class="counter fas fa-heart"> <span id="count">0</span></div>
+    </div>
+</header>
+
+<div class="d-flex">
+    <div class="sidebar p-3" style="overflow-y: auto; position: fixed; height: 95vh; margin-top: 55px">
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content1')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox1_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox1_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox1_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox1_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content2')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox2_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox2_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox2_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox2_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content3')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox3_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox3_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox3_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox3_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content4')">Пункт меню 4</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox4_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox4_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox4_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox4_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content5')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox5_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox5_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox5_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox5_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content6')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox6_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox6_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox6_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox6_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content7')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox7_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox7_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox7_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox7_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content8')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox8_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox8_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox8_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox8_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content9')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox9_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox9_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox9_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox9_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content10')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox10_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox10_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox10_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox10_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content11')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox11_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox11_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox11_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox11_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content12')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox12_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox12_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox12_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox12_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content13')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox13_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox13_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox13_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox13_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content14')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox14_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox14_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox14_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox14_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content15')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox15_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox15_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox15_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox15_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content16')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox16_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox16_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox16_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox16_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content17')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox17_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox17_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox17_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox17_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content18')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox18_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox18_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox18_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox18_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content19')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox19_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox19_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox19_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox19_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content20')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox20_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox20_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox20_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox20_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content21')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox21_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox21_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox21_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox21_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content22')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox22_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox22_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox22_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox22_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content23')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox23_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox23_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox23_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox23_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content24')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox24_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox24_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox24_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox24_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content25')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox25_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox25_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox25_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox25_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content26')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox26_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox26_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox26_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox26_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content27')">Пункт меню 1</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox27_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox27_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox27_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox27_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content28')">Пункт меню 2</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox28_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox28_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox28_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox28_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content29')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox29_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox29_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox29_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox29_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+        <div class="menu-item">
+            <button class="btn btn-light btn-custom" onclick="showContent('content30')">Пункт меню 3</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox30_1" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox30_1"><i class="fas fa-heart"></i></label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkbox30_2" onchange="handleCheckboxChange(this)">
+                <label class="form-check-label" for="checkbox30_2"><i class="fas fa-times-circle"></i></label>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-left: 200px; padding: 15px; margin-top: 55px">
+        <div id="content1" class="content-section">
+            <img src="qr-code.png" alt="">
+            <img src="qr-code.png" alt="">
+        </div>
+        <div id="content2" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content3" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content4" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content5" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content6" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content7" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content8" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content9" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content10" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content11" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content12" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content13" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content14" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content15" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content16" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content17" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content18" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content19" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content20" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content21" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content22" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content23" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content24" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content25" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content26" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content27" class="content-section">
+            <h1>Содержимое пункта меню 1</h1>
+        </div>
+        <div id="content28" class="content-section">
+            <h1>Содержимое пункта меню 2</h1>
+        </div>
+        <div id="content29" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+        <div id="content30" class="content-section">
+            <h1>Содержимое пункта меню 3</h1>
+        </div>
+    </div>
+</div>
+<!-- Подключение Bootstrap 5 JS (опционально) -->
+<script src="bootstrap.bundle.min.js"></script>
+</body>
+</html>
