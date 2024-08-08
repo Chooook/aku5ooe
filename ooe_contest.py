@@ -1,117 +1,134 @@
 import json
 import os
 
+import smbclient
+from smbclient.shutil import open_file
+# from smbclient.shutil import copyfile as smbcf
+
 
 class OOEContest:
     def __init__(self):
         """Класс для работы с голосованием по конкурсу"""
-        self.version = 0.1
+        self.smb_server = сервер
+        self.smb_user = логин
+        self.smb_pass = пароль
+        self.smb_session = self.create_smb_session()
 
-        self.current_dir = os.path.dirname(os.path.realpath(__file__))
         self.json_filename = 'contest_info.json'
+        self.smb_output_path = папка
+        self.alt_smb_output_path = папка
+        self.smb_json_path = os.path.join(
+            self.smb_output_path, self.json_filename)
+        self.alt_smb_json_path = os.path.join(
+            self.alt_smb_output_path, self.json_filename)
+        self.current_dir = os.path.dirname(os.path.realpath(__file__))
         self.json_path = os.path.join(self.current_dir, self.json_filename)
-        # если возможно достать список логинов - лучше использовать их
-        self.emails = ['ovch@omega.sbrf.ru',
-                       'judge2@omega.sbrf.ru',
-                       'judge3@omega.sbrf.ru',
-                       'judge4@omega.sbrf.ru',
-                       'judge5@omega.sbrf.ru',
-                       'judge6@omega.sbrf.ru',
-                       'judge7@omega.sbrf.ru',
-                       'judge8@omega.sbrf.ru']
 
-    def get_judge_data(self, email: str = None):
-        """Метод для получения данных о голосовании по email судьи"""
-        email = email.lower()
-        if email not in self.emails:
-            return None
+        self.logins = ['Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин',
+                       'Логин']
 
-        with open(self.json_path, 'r') as f:
-            stored_data = json.load(f)[email]
+    @staticmethod
+    def showVersion():
+        return 'OOEContest 2024-08-07 v0.3'
+
+    def create_smb_session(self):
+        smb_client_session = smbclient.register_session(
+            server=self.smb_server,
+            username=self.smb_user,
+            password=self.smb_pass)
+        return smb_client_session
+
+    def get_judge_data(self, login: str = None):
+        """Метод для получения данных о голосовании по логину судьи"""
+        if login not in self.logins:
+            return
+        with open_file(self.alt_smb_json_path, 'r') as f:
+            stored_data = json.load(f)[login]
         return json.dumps(stored_data)
 
-    def update_votes(self, email: str, new_data: str):
-        """Метод для обновления данных о голосовании по email судьи"""
+    def update_votes(self, login: str, new_data: str):
+        """Метод для обновления данных о голосовании по логину судьи"""
         # добавить переменную на фронте для проверки, завершено голосование
         # или нет, если да - обновление данных недоступно
-        email = email.lower()
-        if email not in self.emails:
-            return None
-        print(new_data)
-        new_data: dict = json.loads(new_data)
+        if login not in self.logins:
+            return
 
-        with open(self.json_path, 'r') as f:
+        with open_file(self.alt_smb_json_path, 'r') as f:
             all_data = json.load(f)
-            finished = all_data[email]['finished']
-            stored_values = all_data[email]['participants']
+        finished = all_data[login]['finished']
+        stored_values = all_data[login]['participants']
 
         if finished:
-            return self.get_judge_data(email)
+            return self.get_judge_data(login)
 
-        for participant in new_data:
-            new_values = new_data[participant]
-            if 'like' in new_values:
-                stored_values[participant]['like'] = (new_values['like'])
-            if 'read' in new_values:
-                stored_values[participant]['read'] = (new_values['read'])
+        new_data = list(filter(lambda x: x.isdigit(), new_data))
 
-        with open(self.json_path, 'w') as f:
-            to_change = all_data[email]['participants']
-            to_change.update(stored_values)
+        if new_data.pop(-1) == '1':
+            vote_type = 'like'
+        else:
+            vote_type = 'dislike'
+
+        participant = f'participant{"".join(new_data)}'
+
+        if vote_type == 'like':
+            stored_values[participant]['like'] = True
+            stored_values[participant]['dislike'] = False
+        else:
+            stored_values[participant]['like'] = False
+            stored_values[participant]['dislike'] = True
+
+        to_change = all_data[login]['participants']
+        to_change.update(stored_values)
+        with open_file(self.alt_smb_json_path, 'w') as f:
             json.dump(all_data, f, indent=2)
-        return self.get_judge_data(email)
+        with open_file(self.smb_json_path, 'w') as f:
+            json.dump(all_data, f, indent=2)
+        # smbcf(self.alt_smb_json_path, self.smb_json_path)
+        return self.get_judge_data(login)
 
-    def finish_voting(self, email: str):
-        """Метод для завершения голосования по email судьи"""
-        email = email.lower()
-        if email not in self.emails:
+    def finish_voting(self, login: str):
+        """Метод для завершения голосования по логину судьи"""
+        if login not in self.logins:
             return None
 
-        with open(self.json_path, 'r') as f:
+        with open_file(self.alt_smb_json_path, 'r') as f:
             all_data = json.load(f)
 
         # для завершения голосования должно быть 15 голосов
         counter = 0
-        for participant in all_data[email]['participants']:
-            if all_data[email]['participants'][participant]['like'] is True:
+        for participant in all_data[login]['participants']:
+            if all_data[login]['participants'][participant]['like'] is True:
                 counter += 1
         if counter != 15:
-            return self.get_judge_data(email)
+            return self.get_judge_data(login)
 
-        with open(self.json_path, 'w') as f:
-            all_data[email]['finished'] = True
+        all_data[login]['finished'] = True
+        with open_file(self.alt_smb_json_path, 'w') as f:
             json.dump(all_data, f, indent=2)
+        with open_file(self.smb_json_path, 'w') as f:
+            json.dump(all_data, f, indent=2)
+        # smbcf(self.alt_smb_json_path, self.smb_json_path)
 
-        participants = list(all_data[email]['participants'].keys())
-        positive_votes = {email: [
+        participants = list(all_data[login]['participants'].keys())
+        positive_votes = {login: [
             participant for participant in participants
-            if all_data[email]['participants'][participant]['like'] is True
+            if all_data[login]['participants'][participant]['like'] is True
         ]}
-        judge_results_path = os.path.join(self.current_dir,
-                                          f'{email}_results.json')
-        with open(judge_results_path, 'w') as f:
+        alt_smb_judge_results_path = os.path.join(self.alt_smb_output_path,
+                                                  f'{login}_results.json')
+        smb_judge_results_path = os.path.join(self.smb_output_path,
+                                              f'{login}_results.json')
+        with open_file(alt_smb_judge_results_path, 'w') as f:
             json.dump(positive_votes, f, indent=2)
+        with open_file(smb_judge_results_path, 'w') as f:
+            json.dump(positive_votes, f, indent=2)
+        # smbcf(alt_smb_judge_results_path, smb_judge_results_path)
 
-        return self.get_judge_data(email)
-
-
-if __name__ == '__main__':
-    instance = OOEContest()
-    instance.get_judge_data('ovch@omega.sbrf.ru')
-    instance.update_votes('ovch@omega.sbrf.ru',
-                          '{"participant1": {"like": false}'
-                          ',"participant2": {"like": false}'
-                          ',"participant3": {"like": false}'
-                          ',"participant4": {"like": false}'
-                          ',"participant5": {"like": false}'
-                          ',"participant6": {"like": false}'
-                          ',"participant7": {"like": false}'
-                          ',"participant8": {"like": false}'
-                          ',"participant9": {"like": false}'
-                          ',"participant10": {"like": false}'
-                          ',"participant11": {"like": false}'
-                          ',"participant12": {"like": false}'
-                          ',"participant13": {"like": false}'
-                          ',"participant14": {"like": false}'
-                          ',"participant15": {"like": false}}')
-    instance.finish_voting('ovch@omega.sbrf.ru')
+        return self.get_judge_data(login)
