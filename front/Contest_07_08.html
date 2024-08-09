@@ -172,8 +172,8 @@
       </div>
     </header>
 
-    <div style="margin-top: 80px">
-      <div class="">
+    <div style="display: flex; margin-top: 80px; height: calc(100% - 80px)">
+      <div class="content-left">
         <div class="status d-flex" style="height: 50px; background-color: #fafafa; width: 40vh">
           <div style="white-space: nowrap">
             <div class="counter-left">
@@ -254,7 +254,7 @@
                 newI.className = 'fas fa-heart';
                 newLabel.appendChild(newI);
 
-                <!-- Создание блока с крестом -->
+                // <!-- Создание блока с крестом -->
                 let newForm2 = document.createElement('div');
                 newForm2.className = 'form-check';
                 // newButton.appendChild(newForm2);
@@ -286,26 +286,7 @@
         </div>
       </div>
 
-      <div class="sidebar p-3 d-flex" id="right-sidebar">
-        <div align="center">
-          <img id="participant-image" src="logo_cup.png" alt="" />
-          <p id="part-name"></p>
-        </div>
-        <div style="top: 0">
-          <p style="text-align: center">Размер документа</p>
-          <input
-            class="form-range"
-            type="range"
-            id="slider"
-            min="1000"
-            max="1500"
-            value="1200"
-            oninput="resizeImage(this.value)"
-          />
-        </div>
-      </div>
-
-      <div align="center">
+      <div class="content-center">
         <div id="content1" class="content-section">
           <img class="img-resize" src="test.jpg" alt="" />
           <br />
@@ -515,6 +496,25 @@
           <img class="img-resize" src="test.jpg" alt="" />
           <br />
           <img class="img-resize" src="test.jpg" alt="" />
+        </div>
+      </div>
+
+      <div class="sidebar p-3 d-flex" id="right-sidebar">
+        <div align="center">
+          <img id="participant-image" src="logo_cup.png" alt="" />
+          <p id="part-name"></p>
+        </div>
+        <div style="top: 0">
+          <p style="text-align: center">Размер документа</p>
+          <input
+            class="form-range"
+            type="range"
+            id="slider"
+            min="1000"
+            max="1500"
+            value="1200"
+            oninput="resizeImage(this.value)"
+          />
         </div>
       </div>
     </div>
