@@ -48,6 +48,16 @@ header {
     margin-right: 70px;
     margin-top: 5px
 }
+.counter-left {
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+    margin-top: 10px
+}
+#span-left {
+    text-decoration: underline;
+    color: #007879;
+}
 .sidebar {
     background-color: #fafafa;
     padding: 15px;
@@ -91,18 +101,26 @@ header {
 [id^="participant"] {
     font-size: 20px;
 }
-#left-sidebar, #right-sidebar {
+.status {
     position: fixed;
-    height: calc(100% - 80px);
+    left: 0;
+    top: 80px;
+    text-align: center;
 }
 #left-sidebar {
-    overflow-y: auto;
+    /*overflow-y: auto;*/
+    height: calc(100% - 110px);
+    position: fixed;
     width: 40vh;
     left: 0;
+    top: 130px;
 }
 #right-sidebar {
+    height: calc(100% - 80px);
+    position: fixed;
     width: 30vh;
-    right:0
+    right:0;
+    top: 80px;
 }
 .img-resize {
     transition: width 0.3s; /* Плавный переход */

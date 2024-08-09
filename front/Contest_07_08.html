@@ -15,8 +15,8 @@
     <link href="bootstrap.min.css" rel="stylesheet">
     <link href="all.min.css" rel="stylesheet">
     <link href="Contest_07_08.css" rel="stylesheet">
-	<script src="../../resources/assets/external/requirejs/require.js"></script>
-	<script src="links.js"></script>
+<!--	<script src="../../resources/assets/external/requirejs/require.js"></script>-->
+<!--	<script src="links.js"></script>-->
     <script>
         function resizeImage(width) {
             const images = document.querySelectorAll('.img-resize');
@@ -42,6 +42,7 @@
 
             updateCheckboxIcons(checkbox);
             updateCount();
+            updateCountLeft();
         }
 
         function updateCheckboxIcons(checkbox) {
@@ -56,14 +57,14 @@
 
         function updateCount() {
             let count = countTrue(checkboxes);
-            document.getElementById('count').innerText = `${count}`;
+            document.getElementById('count').innerText = `${count}/15`;
             updateButtonState();
         }
 
         function updateButtonState() {
             const button = document.getElementById('btn-end-vote');
             let count = document.getElementById('count').innerText;
-            if (count === "15") {
+            if (count === "15/15") {
                 button.disabled = false; // Активируем кнопку
                 button.title = ""; // Убираем подсказку, когда кнопка активна
             } else {
@@ -80,6 +81,22 @@
             let count = 0;
             checkboxes.forEach(pair => {
                 if (pair[0] === true) {
+                        count++;
+                    }
+                });
+            return count;
+        }
+
+        function updateCountLeft() {
+            let countLeft = countAll(checkboxes);
+            document.getElementById('span-left').innerText = `${30-countLeft}`;
+            updateButtonState();
+        }
+
+        function countAll(checkboxes) {
+            let count = 0;
+            checkboxes.forEach(pair => {
+                if (pair[0] === true || pair[1] === true) {
                         count++;
                     }
                 });
@@ -111,15 +128,33 @@
     </button>
     <div class="counter">
         <i class="fas fa-heart"></i>
-        <span id="count">0</span>
+        <span id="count">0/15</span>
     </div>
 </header>
 
 <div style="margin-top: 80px">
 
-    <div class="sidebar p-3" id="left-sidebar">
-        <script>
+    <div class="">
+        <div class="status d-flex" style="height: 50px; background-color: #fafafa; width: 40vh;">
+            <div style="white-space: nowrap;">
+                <div class="counter-left">
+                    <p>Всего эссе к оценке: <span id="span-left">30</span> / 30</p>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar p-3" id="left-sidebar" style="overflow-y: auto;">
+            <script>
             const participants = [
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
+                "Саша", "Пётр", "Вася",
             ];
             function createMenuItems() {
                 let sidebar = document.getElementById('left-sidebar');
@@ -190,6 +225,7 @@
             }
             createMenuItems();
         </script>
+        </div>
     </div>
 
     <div class="sidebar p-3 d-flex" id="right-sidebar">
