@@ -29,7 +29,7 @@ header {
   opacity: 0.85;
 }
 #btn-end-vote:disabled {
-  cursor: help;
+  cursor: not-allowed;
   opacity: 0.3;
   pointer-events: auto;
 }
@@ -137,14 +137,15 @@ header {
   /*overflow-y: auto;*/
   height: calc(100% - 110px);
   position: fixed;
-  width: 40vh;
-  left: 0;
   top: 130px;
+  padding: 1rem;
+  background-color: #fafafa;
 }
 #right-sidebar {
   height: calc(100% - 80px);
   position: fixed;
   width: 30vh;
+  min-width: 300px;
   right: 0;
   top: 80px;
 }
@@ -212,7 +213,11 @@ header {
 }
 
 .content-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 40vh;
+  min-width: 400px;
   height: 100%;
 }
 
@@ -223,4 +228,56 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.total-essays {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  background-color: #fafafa;
+  width: 100%;
+}
+
+.alignStart {
+  align-items: flex-start;
+}
+
+.alignCenter {
+  align-items: center;
+}
+
+/* модалка */
+.success-modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+}
+
+.success-modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+}
+
+.endVoteClose {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.endVoteClose:hover,
+.endVoteClose:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
