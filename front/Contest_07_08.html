@@ -1,462 +1,525 @@
 <html lang="ru">
-<!DOCTYPE html>
-<head>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="UTF-8">
+  <!DOCTYPE html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
     <title>Конкурс ЛПП</title>
-	<meta name="HandheldFriendly" content="True">
-	<meta name="MobileOptimized" content="320">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<meta http-equiv="cleartype" content="on">
-    <link rel="icon" type="image/png" href="logo_cup.png"/>
-    <link href="bootstrap.min.css" rel="stylesheet">
-    <link href="all.min.css" rel="stylesheet">
-    <link href="Contest_07_08.css" rel="stylesheet">
-<!--	<script src="../../resources/assets/external/requirejs/require.js"></script>-->
-<!--	<script src="links.js"></script>-->
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta http-equiv="cleartype" content="on" />
+    <link rel="icon" type="image/png" href="logo_cup.png" />
+    <link href="bootstrap.min.css" rel="stylesheet" />
+    <link href="all.min.css" rel="stylesheet" />
+    <link href="Contest_07_08.css" rel="stylesheet" />
+    <!--	<script src="../../resources/assets/external/requirejs/require.js"></script>-->
+    <!--	<script src="links.js"></script>-->
     <script>
-        function resizeImage(width) {
-            const images = document.querySelectorAll('.img-resize');
-            images.forEach(img => {
-                img.style.width = width + 'px';
-            });
+      function resizeImage(width) {
+        const images = document.querySelectorAll('.img-resize');
+        images.forEach((img) => {
+          img.style.width = width + 'px';
+        });
+      }
+
+      // Переменные для состояния чекбоксов
+      let checkboxes = Array.from({ length: 30 }, () => [false, false]);
+
+      function updateCheckboxes() {
+        checkboxes.forEach((checkbox, index) => {
+          document.getElementById(`checkbox${index + 1}_1`).checked = checkbox[0];
+          document.getElementById(`checkbox${index + 1}_2`).checked = checkbox[1];
+        });
+      }
+
+      function handleCheckboxChange(checkbox) {
+        const index = parseInt(checkbox.id.match(/\d+/)[0]) - 1;
+
+        updateCheckboxes(checkbox, index);
+        updateCount();
+        updateCountLeft();
+      }
+
+      function updateCheckboxes(checkbox, index) {
+        const isLikeButton = checkbox.id.endsWith('1');
+        const isChecked = checkbox.checked;
+        const likeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_1`);
+        const dislikeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_2`);
+        const likeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_1"]`);
+        const dislikeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_2"]`);
+
+        // логика для того, чтобы убрать чек лайка, если поставлен дислайк, и наоборот
+        if (isLikeButton && isChecked) {
+          likeLabel.classList.add('checked');
+          dislikeLabel.classList.remove('checked_red');
+          dislikeCheckbox.checked = false;
+          checkboxes[index][0] = true;
+          checkboxes[index][1] = false;
+          // изменяем стили соответсвующей кнопки
+          updateParticipantButtonStyles(index + 1, 'button-like');
         }
-
-        // Переменные для состояния чекбоксов
-        let checkboxes = Array.from({ length: 30 }, () => [false, false]);
-
-        function updateCheckboxes() {
-            checkboxes.forEach((checkbox, index) => {
-                document.getElementById(`checkbox${index + 1}_1`).checked = checkbox[0];
-                document.getElementById(`checkbox${index + 1}_2`).checked = checkbox[1];
-            });
+        if (isLikeButton && !isChecked) {
+          likeLabel.classList.remove('checked');
+          checkboxes[index][0] = false;
+          updateParticipantButtonStyles(index + 1, 'button-inactive');
         }
-
-        function handleCheckboxChange(checkbox) {
-            const index = parseInt(checkbox.id.match(/\d+/)[0]) - 1;
-            const subIndex = checkbox.id.endsWith('1') ? 0 : 1;
-            checkboxes[index][subIndex] = checkbox.checked;
-
-            updateCheckboxIcons(checkbox);
-            updateCount();
-            updateCountLeft();
+        if (!isLikeButton && isChecked) {
+          dislikeLabel.classList.add('checked_red');
+          likeLabel.classList.remove('checked');
+          likeCheckbox.checked = false;
+          checkboxes[index][0] = false;
+          checkboxes[index][1] = true;
+          updateParticipantButtonStyles(index + 1, 'button-dislike');
         }
-
-        function updateCheckboxIcons(checkbox) {
-            const label = document.querySelector(`label[for="${checkbox.id}"]`);
-            if (checkbox.checked) {
-                label.classList.add(checkbox.id.endsWith('2') ? 'checked_red' : 'checked');
-            } else {
-                label.classList.remove('checked');
-                label.classList.remove('checked_red');
-            }
+        if (!isLikeButton && !isChecked) {
+          dislikeLabel.classList.remove('checked_red');
+          checkboxes[index][1] = false;
+          updateParticipantButtonStyles(index + 1, 'button-inactive');
         }
+      }
 
-        function updateCount() {
-            let count = countTrue(checkboxes);
-            document.getElementById('count').innerText = `${count}/15`;
-            updateButtonState();
+      function updateParticipantButtonStyles(index, className) {
+        const classList = ['button-inactive', 'button-like', 'button-dislike'];
+        const participantButton = document.querySelector(`#participant${index}`);
+        participantButton.classList.add(className);
+        const classesToRemove = classList.filter((cl) => cl !== className);
+        classesToRemove.forEach((cl) => {
+          participantButton.classList.remove(cl);
+        });
+      }
+
+      function updateCount() {
+        let count = countTrue(checkboxes);
+        document.getElementById('count').innerText = `${count}/15`;
+        updateButtonState();
+      }
+
+      function updateButtonState() {
+        const button = document.getElementById('btn-end-vote');
+        let count = document.getElementById('count').innerText;
+        if (count === '15/15') {
+          button.disabled = false; // Активируем кнопку
+          button.title = ''; // Убираем подсказку, когда кнопка активна
+        } else {
+          button.disabled = true; // Деактивируем кнопку
+          button.title = 'Необходимо 15 положительных голосов'; // Устанавливаем подсказку
         }
+      }
+      // document.getElementById('btn-end-vote').addEventListener('click', function() {
+      //     this.style.opacity = '1'; // Изменяем прозрачность при нажатии
+      // });
 
-        function updateButtonState() {
-            const button = document.getElementById('btn-end-vote');
-            let count = document.getElementById('count').innerText;
-            if (count === "15/15") {
-                button.disabled = false; // Активируем кнопку
-                button.title = ""; // Убираем подсказку, когда кнопка активна
-            } else {
-                button.disabled = true; // Деактивируем кнопку
-                button.title = "Необходимо 15 положительных голосов"; // Устанавливаем подсказку
-            }
-        }
-        // document.getElementById('btn-end-vote').addEventListener('click', function() {
-        //     this.style.opacity = '1'; // Изменяем прозрачность при нажатии
-        // });
+      // Функция для подсчета количества true
+      function countTrue(checkboxes) {
+        console.log(checkboxes);
+        let count = 0;
+        checkboxes.forEach((pair) => {
+          if (pair[0] === true) {
+            count++;
+          }
+        });
+        return count;
+      }
 
-        // Функция для подсчета количества true
-        function countTrue(checkboxes) {
-            let count = 0;
-            checkboxes.forEach(pair => {
-                if (pair[0] === true) {
-                        count++;
-                    }
-                });
-            return count;
-        }
+      function updateCountLeft() {
+        let countLeft = countAll(checkboxes);
+        document.getElementById('span-left').innerText = `${30 - countLeft}`;
+        updateButtonState();
+      }
 
-        function updateCountLeft() {
-            let countLeft = countAll(checkboxes);
-            document.getElementById('span-left').innerText = `${30-countLeft}`;
-            updateButtonState();
-        }
+      function countAll(checkboxes) {
+        let count = 0;
+        checkboxes.forEach((pair) => {
+          if (pair[0] === true || pair[1] === true) {
+            count++;
+          }
+        });
+        return count;
+      }
 
-        function countAll(checkboxes) {
-            let count = 0;
-            checkboxes.forEach(pair => {
-                if (pair[0] === true || pair[1] === true) {
-                        count++;
-                    }
-                });
-            return count;
-        }
+      function showContent(buttonId) {
+        let num = buttonId.replace(/[^0-9]/g, '');
+        document.querySelectorAll('.content-section').forEach((section) => {
+          section.style.display = 'none';
+        });
+        document.getElementById(`content${num}`).style.display = 'block';
+        document.getElementById('participant-image').src = part_images[buttonId];
+        document.getElementById('part-name').textContent = participants[num - 1];
+      }
 
-        function showContent(buttonId) {
-            let num = buttonId.replace(/[^0-9]/g, '')
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(`content${num}`).style.display = 'block';
-            document.getElementById('participant-image').src = part_images[buttonId]
-            document.getElementById('part-name').textContent = participants[num-1]
-        }
-
-        window.onload = function() {
-            updateCheckboxes(); // Устанавливаем состояние чекбоксов при загрузке страницы
-            updateCount(); // Устанавливаем счетчик
-            showContent('content0'); // Показываем инструкцию по умолчанию
-        };
+      window.onload = function () {
+        updateCheckboxes(); // Устанавливаем состояние чекбоксов при загрузке страницы
+        updateCount(); // Устанавливаем счетчик
+        showContent('content0'); // Показываем инструкцию по умолчанию
+      };
     </script>
-</head>
-<body>
-<header class="bg fixed-top" id="header">
-    <img src="contest_name_1.png" alt="logo" height="35px" style="margin-left: 10px">
-    <button id="btn-end-vote" class="btn btn-custom" title="Необходимо 15 положительных голосов" disabled>
+  </head>
+  <body>
+    <header class="bg fixed-top" id="header">
+      <img src="contest_name_1.png" alt="logo" height="35px" style="margin-left: 10px" />
+      <button id="btn-end-vote" class="btn btn-custom" title="Необходимо 15 положительных голосов" disabled>
         Завершить оценку
-    </button>
-    <div class="counter">
+      </button>
+      <div class="counter">
         <i class="fas fa-heart"></i>
         <span id="count">0/15</span>
-    </div>
-</header>
+      </div>
+    </header>
 
-<div style="margin-top: 80px">
-
-    <div class="">
-        <div class="status d-flex" style="height: 50px; background-color: #fafafa; width: 40vh;">
-            <div style="white-space: nowrap;">
-                <div class="counter-left">
-                    <p>Всего эссе к оценке: <span id="span-left">30</span> / 30</p>
-                </div>
+    <div style="margin-top: 80px">
+      <div class="">
+        <div class="status d-flex" style="height: 50px; background-color: #fafafa; width: 40vh">
+          <div style="white-space: nowrap">
+            <div class="counter-left">
+              <p>Всего эссе к оценке: <span id="span-left">30</span> / 30</p>
             </div>
+          </div>
         </div>
-        <div class="sidebar p-3" id="left-sidebar" style="overflow-y: auto;">
-            <script>
+        <div class="sidebar p-3" id="left-sidebar" style="overflow-y: auto">
+          <script>
             const participants = [
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
-                "Саша", "Пётр", "Вася",
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
+              'Саша',
+              'Пётр',
+              'Вася',
             ];
             function createMenuItems() {
-                let sidebar = document.getElementById('left-sidebar');
-                participants.forEach ( function( participant, index ) {
+              let sidebar = document.getElementById('left-sidebar');
+              participants.forEach(function (participant, index) {
+                let newItem = document.createElement('div');
+                newItem.className = 'menu-item';
 
-                    let newItem = document.createElement('div');
-                    newItem.className = 'menu-item';
+                let newButton = document.createElement('button');
+                newButton.className = 'btn btn-light btn-custom button-inactive';
+                newButton.textContent = participant;
+                newButton.id = 'participant' + (index + 1);
+                newButton.onclick = function () {
+                  showContent(newButton.id);
+                };
+                newItem.appendChild(newButton);
 
-                    let newButton = document.createElement('button');
-                    newButton.className = 'btn btn-light btn-custom';
-                    newButton.textContent = participant;
-                    newButton.id = 'participant' + (index + 1);
-                    newButton.onclick = function() {
-                        showContent(newButton.id);
-                    }
-                    newItem.appendChild(newButton);
+                <!-- Создание блока с сердцем -->
+                let newForm = document.createElement('div');
+                newForm.className = 'form-check';
+                // newButton.appendChild(newForm);
+                newItem.appendChild(newForm);
 
-                    <!-- Создание блока с сердцем -->
-                    let newForm = document.createElement('div');
-                    newForm.className = 'form-check';
-                    // newButton.appendChild(newForm);
-                    newItem.appendChild(newForm);
+                let newInput = document.createElement('input');
+                newInput.className = 'form-check-input';
+                newInput.type = 'checkbox';
+                newInput.id = 'checkbox' + (index + 1) + '_1';
+                newInput.onchange = function () {
+                  handleCheckboxChange(newInput);
+                };
+                newForm.appendChild(newInput);
 
-                    let newInput = document.createElement('input');
-                    newInput.className = 'form-check-input';
-                    newInput.type = 'checkbox';
-                    newInput.id = 'checkbox' + (index + 1) + "_1";
-                    newInput.onchange = function() {
-                        handleCheckboxChange(newInput);
-                    }
-                    newForm.appendChild(newInput);
+                let newLabel = document.createElement('label');
+                newLabel.className = 'form-check-label';
+                newLabel.htmlFor = 'checkbox' + (index + 1) + '_1';
+                newForm.appendChild(newLabel);
 
-                    let newLabel = document.createElement('label');
-                    newLabel.className = 'form-check-label';
-                    newLabel.htmlFor = 'checkbox' + (index + 1) + "_1";
-                    newForm.appendChild(newLabel);
+                let newI = document.createElement('i');
+                newI.className = 'fas fa-heart';
+                newLabel.appendChild(newI);
 
-                    let newI = document.createElement('i');
-                    newI.className = 'fas fa-heart';
-                    newLabel.appendChild(newI);
+                <!-- Создание блока с крестом -->
+                let newForm2 = document.createElement('div');
+                newForm2.className = 'form-check';
+                // newButton.appendChild(newForm2);
+                newItem.appendChild(newForm2);
 
-                    <!-- Создание блока с крестом -->
-                    let newForm2 = document.createElement('div');
-                    newForm2.className = 'form-check';
-                    // newButton.appendChild(newForm2);
-                    newItem.appendChild(newForm2);
+                let newInput2 = document.createElement('input');
+                newInput2.className = 'form-check-input';
+                newInput2.type = 'checkbox';
+                newInput2.id = 'checkbox' + (index + 1) + '_2';
+                newInput2.onchange = function () {
+                  handleCheckboxChange(newInput2);
+                };
+                newForm2.appendChild(newInput2);
 
-                    let newInput2 = document.createElement('input');
-                    newInput2.className = 'form-check-input';
-                    newInput2.type = 'checkbox';
-                    newInput2.id = 'checkbox' + (index + 1) + "_2";
-                    newInput2.onchange = function() {
-                        handleCheckboxChange(newInput2);
-                    }
-                    newForm2.appendChild(newInput2);
+                let newLabel2 = document.createElement('label');
+                newLabel2.className = 'form-check-label';
+                newLabel2.htmlFor = 'checkbox' + (index + 1) + '_2';
+                newForm2.appendChild(newLabel2);
 
-                    let newLabel2 = document.createElement('label');
-                    newLabel2.className = 'form-check-label';
-                    newLabel2.htmlFor = 'checkbox' + (index + 1) + "_2";
-                    newForm2.appendChild(newLabel2);
+                let newI2 = document.createElement('i');
+                newI2.className = 'fas fa-times-circle';
+                newLabel2.appendChild(newI2);
 
-                    let newI2 = document.createElement('i');
-                    newI2.className = 'fas fa-times-circle';
-                    newLabel2.appendChild(newI2);
-
-                    sidebar.appendChild(newItem);
-                });
+                sidebar.appendChild(newItem);
+              });
             }
             createMenuItems();
-        </script>
+          </script>
         </div>
-    </div>
+      </div>
 
-    <div class="sidebar p-3 d-flex" id="right-sidebar">
+      <div class="sidebar p-3 d-flex" id="right-sidebar">
         <div align="center">
-            <img id="participant-image" src="logo_cup.png" alt="">
-            <p id="part-name"></p>
+          <img id="participant-image" src="logo_cup.png" alt="" />
+          <p id="part-name"></p>
         </div>
-        <div style="top: 0;">
-            <p style="text-align: center">Размер документа</p>
-            <input class="form-range" type="range" id="slider" min="1000" max="1500" value="1200"
-                   oninput="resizeImage(this.value)">
+        <div style="top: 0">
+          <p style="text-align: center">Размер документа</p>
+          <input
+            class="form-range"
+            type="range"
+            id="slider"
+            min="1000"
+            max="1500"
+            value="1200"
+            oninput="resizeImage(this.value)"
+          />
         </div>
-    </div>
+      </div>
 
-    <div align="center">
+      <div align="center">
         <div id="content1" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content2" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content3" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content4" class="content-section">
-
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content5" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content6" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content7" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content8" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content9" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content10" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content11" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content12" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content13" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content14" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content15" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content16" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content17" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content18" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content19" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content20" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content21" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content22" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content23" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content24" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content25" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content26" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content27" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content28" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content29" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
         <div id="content30" class="content-section">
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
-            <br>
-            <img class="img-resize" src="test.jpg" alt="">
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
+          <br />
+          <img class="img-resize" src="test.jpg" alt="" />
         </div>
+      </div>
     </div>
 
-</div>
-
-<script src="Contest_07_08.js"></script>
-<script src="bootstrap.bundle.min.js"></script>
-</body>
+    <script src="Contest_07_08.js"></script>
+    <script src="bootstrap.bundle.min.js"></script>
+  </body>
 </html>
