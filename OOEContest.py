@@ -9,14 +9,14 @@ from smbclient.shutil import open_file
 class OOEContest:
     def __init__(self):
         """Класс для работы с голосованием по конкурсу"""
-        self.smb_server = сервер
-        self.smb_user = логин
-        self.smb_pass = пароль
+        self.smb_server = ...
+        self.smb_user = ...
+        self.smb_pass = ...
         self.smb_session = self.create_smb_session()
 
         self.json_filename = 'contest_info.json'
-        self.smb_output_path = папка
-        self.alt_smb_output_path = папка
+        self.smb_output_path = '.'
+        self.alt_smb_output_path = '.'
         self.smb_json_path = os.path.join(
             self.smb_output_path, self.json_filename)
         self.alt_smb_json_path = os.path.join(
@@ -24,15 +24,15 @@ class OOEContest:
         self.current_dir = os.path.dirname(os.path.realpath(__file__))
         self.json_path = os.path.join(self.current_dir, self.json_filename)
 
-        self.logins = ['Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин',
-                       'Логин']
+        # self.logins = ['l1',
+        #                'l2',
+        #                'l3',
+        #                'l4',
+        #                'l5',
+        #                'l6',
+        #                'l7',
+        #                'l8',
+        #                'l9']
 
     @staticmethod
     def showVersion():
@@ -47,8 +47,8 @@ class OOEContest:
 
     def get_judge_data(self, login: str = None):
         """Метод для получения данных о голосовании по логину судьи"""
-        if login not in self.logins:
-            return
+        # if login not in self.logins:
+        #     return
         with open_file(self.alt_smb_json_path, 'r') as f:
             stored_data = json.load(f)[login]
         return json.dumps(stored_data)
@@ -57,8 +57,8 @@ class OOEContest:
         """Метод для обновления данных о голосовании по логину судьи"""
         # добавить переменную на фронте для проверки, завершено голосование
         # или нет, если да - обновление данных недоступно
-        if login not in self.logins:
-            return
+        # if login not in self.logins:
+        #     return
 
         with open_file(self.alt_smb_json_path, 'r') as f:
             all_data = json.load(f)
@@ -78,11 +78,17 @@ class OOEContest:
         participant = f'participant{"".join(new_data)}'
 
         if vote_type == 'like':
-            stored_values[participant]['like'] = True
-            stored_values[participant]['dislike'] = False
+            if stored_values[participant]['like'] is True:
+                stored_values[participant]['like'] = False
+            else:
+                stored_values[participant]['like'] = True
+                stored_values[participant]['dislike'] = False
         else:
-            stored_values[participant]['like'] = False
-            stored_values[participant]['dislike'] = True
+            if stored_values[participant]['dislike'] is True:
+                stored_values[participant]['dislike'] = False
+            else:
+                stored_values[participant]['like'] = False
+                stored_values[participant]['dislike'] = True
 
         to_change = all_data[login]['participants']
         to_change.update(stored_values)
@@ -95,8 +101,8 @@ class OOEContest:
 
     def finish_voting(self, login: str):
         """Метод для завершения голосования по логину судьи"""
-        if login not in self.logins:
-            return None
+        # if login not in self.logins:
+        #     return None
 
         with open_file(self.alt_smb_json_path, 'r') as f:
             all_data = json.load(f)
