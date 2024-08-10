@@ -276,6 +276,10 @@ header {
   align-items: center;
 }
 
+.content-center-extended {
+  width: calc(100% - 30vh - 25px);
+}
+
 .total-essays {
   display: flex;
   align-items: center;

@@ -187,8 +187,10 @@ const contentLeftTriangle = document.querySelector(
   '.content-left-triangle-left'
 );
 const contentLeftInside = document.querySelectorAll('.content-left-inside');
+const contentCenter = document.querySelector('.content-center');
 contentLeftButton.addEventListener('click', () => {
   contentLeft.classList.toggle('content-left-invisible');
+  contentCenter.classList.toggle('content-center-extended');
   contentLeftInside.forEach((el) =>
     el.classList.toggle('content-left-invisible')
   );
