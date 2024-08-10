@@ -46,16 +46,22 @@
 
     <div style="display: flex; margin-top: 80px; height: calc(100% - 80px)">
       <div class="content-left">
-        <div>
+        <div class="content-left-inside">
           <div style="white-space: nowrap">
             <div class="counter-left">
               <p>Всего эссе к оценке: <span id="span-left">30</span> / 30</p>
             </div>
           </div>
         </div>
-        <div id="left-sidebar" style="overflow-y: auto"></div>
+        <div
+          class="content-left-inside content-left-sidebar"
+          id="left-sidebar"
+          style="overflow-y: auto"
+        ></div>
       </div>
-
+      <button class="content-left-toggle">
+        <div class="content-left-triangle-left"></div>
+      </button>
       <div class="content-center">
         <div id="content1" class="content-section">
           <img class="img-resize" src="test.jpg" alt="" />

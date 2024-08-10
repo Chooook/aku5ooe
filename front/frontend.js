@@ -65,6 +65,7 @@ function initializeCheckboxes() {
     if (checkbox1.checked) {
       updateParticipantButtonStyles(index + 1, 'button-like');
     }
+    updateCountLeft();
   });
 }
 
@@ -177,6 +178,27 @@ document.getElementById('btn-end-vote').addEventListener('click', function (e) {
       successModal.classList.remove('success-modal-opened');
     }
   };
+});
+
+// логика для скрытия и открытия левой панели
+const contentLeft = document.querySelector('.content-left');
+const contentLeftButton = document.querySelector('.content-left-toggle');
+const contentLeftTriangle = document.querySelector(
+  '.content-left-triangle-left'
+);
+const contentLeftInside = document.querySelectorAll('.content-left-inside');
+contentLeftButton.addEventListener('click', () => {
+  contentLeft.classList.toggle('content-left-invisible');
+  contentLeftInside.forEach((el) =>
+    el.classList.toggle('content-left-invisible')
+  );
+  if (Array.from(contentLeft.classList).includes('content-left-invisible')) {
+    contentLeftTriangle.classList.add('content-left-triangle-right');
+    contentLeftTriangle.classList.remove('content-left-triangle-left');
+  } else {
+    contentLeftTriangle.classList.add('content-left-triangle-left');
+    contentLeftTriangle.classList.remove('content-left-triangle-right');
+  }
 });
 
 // Функция для подсчета количества true
