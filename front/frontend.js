@@ -29,21 +29,42 @@ function resizeImage(width) {
 }
 
 // Переменные для состояния чекбоксов
-let checkboxes = [
-  ...Array.from({ length: 15 }, () => [true, false]),
-  ...Array.from({ length: 15 }, () => [false, false]),
-];
+let checkboxes = localStorage.getItem('checkboxes')
+  ? formatStorageCheckboxes(localStorage.getItem('checkboxes'))
+  : Array.from({ length: 30 }, () => [false, false]);
 
+function formatStorageCheckboxes(checkboxes) {
+  const copiedCheckboxes = JSON.parse(JSON.stringify(checkboxes));
+  console.log(copiedCheckboxes);
+  const arr = copiedCheckboxes.split(',');
+  console.log(arr);
+  const resultArr = [];
+  for (let i = 0; i < arr.length; i += 2) {
+    resultArr.push([
+      arr[i].toLowerCase() === 'true',
+      arr[i + 1].toLowerCase() === 'true',
+    ]);
+  }
+  console.log(resultArr);
+
+  return resultArr;
+}
+
+// задаем стили кнопок и состояния чекбоксов
 function initializeCheckboxes() {
   checkboxes.forEach((checkbox, index) => {
-    console.log(index);
     const checkbox1 = document.getElementById(`checkbox${index + 1}_1`);
     checkbox1.checked = checkbox[0];
     const checkbox2 = document.getElementById(`checkbox${index + 1}_2`);
     checkbox2.checked = checkbox[1];
-    console.log(checkbox1, checkbox2);
     updateCheckboxes(checkbox1, index);
     updateCheckboxes(checkbox2, index);
+
+    // дополнительно навешиваем стили кнопки лайк, т.к. в предыдущей функции
+    // они стираются классом button-inactive
+    if (checkbox1.checked) {
+      updateParticipantButtonStyles(index + 1, 'button-like');
+    }
   });
 }
 
@@ -55,7 +76,7 @@ function handleCheckboxChange(checkbox) {
   updateCountLeft();
 }
 
-function updateCheckboxes(checkbox, index, isInitialization) {
+function updateCheckboxes(checkbox, index) {
   const isLikeButton = checkbox.id.endsWith('1');
   const isChecked = checkbox.checked;
   const likeCheckbox = document.querySelector(
@@ -99,6 +120,8 @@ function updateCheckboxes(checkbox, index, isInitialization) {
     checkboxes[index][1] = false;
     updateParticipantButtonStyles(index + 1, 'button-inactive');
   }
+
+  localStorage.setItem('checkboxes', checkboxes);
 }
 
 function updateParticipantButtonStyles(index, className) {
@@ -128,6 +151,8 @@ function updateButtonState() {
     button.title = 'Необходимо 15 положительных голосов'; // Устанавливаем подсказку
   }
 }
+
+// логика для кнопки завершения голосования
 document.getElementById('btn-end-vote').addEventListener('click', function (e) {
   let count = document.getElementById('count').innerText;
   if (count !== '15/15' || e.target.textContent === 'Оценка завершена') {
@@ -136,6 +161,22 @@ document.getElementById('btn-end-vote').addEventListener('click', function (e) {
   e.target.textContent = 'Оценка завершена'; // Изменяем текст при отправке ответов
   e.target.disabled = true;
   e.target.style.opacity = '0.5'; // Изменяем текст при отправке ответов
+
+  // модалка
+  const successModal = document.querySelector('.success-modal');
+  const endVoteClose = document.querySelector('.success-modal-close');
+
+  successModal.classList.add('success-modal-opened');
+
+  endVoteClose.onclick = function () {
+    successModal.classList.remove('success-modal-opened');
+  };
+
+  window.onclick = function (event) {
+    if (event.target == successModal) {
+      successModal.classList.remove('success-modal-opened');
+    }
+  };
 });
 
 // Функция для подсчета количества true
@@ -274,25 +315,6 @@ function createMenuItems() {
     sidebar.appendChild(newItem);
   });
 }
-
-// модалка
-const successModal = document.querySelector('.success-modal');
-const endVoteButton = document.querySelector('#btn-end-vote');
-const endVoteClose = document.querySelector('.success-modal-close');
-
-endVoteButton.onclick = function () {
-  successModal.style.display = 'block';
-};
-
-endVoteClose.onclick = function () {
-  successModal.style.display = 'none';
-};
-
-window.onclick = function (event) {
-  if (event.target == successModal) {
-    successModal.style.display = 'none';
-  }
-};
 
 ///////////////////
 

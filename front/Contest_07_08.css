@@ -12,6 +12,17 @@ header {
   justify-content: space-between;
   align-items: center;
 }
+
+.header-image {
+  margin-left: 10px;
+}
+
+@media screen and (max-width: 1800px) {
+  .header-image {
+    width: 60%;
+  }
+}
+
 #btn-end-vote {
   margin: 0 20px; /* Отступы вокруг кнопки */
   padding: 10px 15px; /* Внутренние отступы */
@@ -259,24 +270,40 @@ header {
   background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
 }
 
+.success-modal-opened {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .success-modal-content {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
   background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
+  margin: 100px;
+  padding: 20px 10px;
   border: 1px solid #888;
   width: 80%;
   max-width: 500px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
 }
 
-.endVoteClose {
+.success-modal-close {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  right: 10px;
   color: #aaa;
-  float: right;
   font-size: 28px;
   font-weight: bold;
 }
 
-.endVoteClose:hover,
-.endVoteClose:focus {
+.success-modal-close:hover,
+.success-modal-close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
