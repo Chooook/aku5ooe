@@ -268,7 +268,7 @@ header {
 }
 
 .content-center {
-  width: calc(100% - 70vh);
+  width: calc(100% - 70vh - 25px);
   height: 100%;
   overflow: auto;
   display: flex;
