@@ -3,7 +3,7 @@ from OOEContest import OOEContest
 
 if __name__ == '__main__':
     instance = OOEContest()
-    print(type(instance.get_judge_data('login')))
+    print(instance.get_judge_data('login'))
 
     print(instance.update_votes('login', 'checkbox1_2'))
     print(instance.update_votes('login', 'checkbox3_2'))
@@ -25,3 +25,4 @@ if __name__ == '__main__':
     print(instance.update_votes('login', 'checkbox17_2'))
 
     print(instance.finish_voting('login'))
+    print(instance.renew_voting('login'))
