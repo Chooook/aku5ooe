@@ -1,4 +1,5 @@
 
+
 var prefix = window.location.pathname.substr( 0, window.location.pathname.toLowerCase().lastIndexOf( "/extensions" ) + 1 );
 var config = {
 	host: window.location.hostname,
@@ -6,9 +7,22 @@ var config = {
 	port: window.location.port,
 	isSecure: window.location.protocol === "https:"
 };
+
+
+// function formatAKUCheckboxes(checkboxes) {
+// 	return Object.keys(checkboxes.participants).map(el => {
+// 		const result = []
+// 		result.push(checkboxes.participants[el]['like']);
+// 		result.push(checkboxes.participants[el]['dislike']);
+// 		return result
+// 	})
+// }  
+
 require.config( {
 	baseUrl: (config.isSecure ? "https://" : "http://") + config.host + (config.port ? ":" + config.port : "") + config.prefix + "resources"
 } );
+
+
 
 require( ["js/qlik"], (qlik) => {
 	qlik.on( "error", (error) => {
@@ -24,7 +38,7 @@ require( ["js/qlik"], (qlik) => {
 
 	var serverName = "AKU5";
 	var sseScriptName = "OOEContest.OOEContest"
-	var userLogin = fetchUserLogin()
+	var userLogin = fetchUserLogin();
 
 	var scriptExpressions = {
 		get_judge_data: {
@@ -59,7 +73,7 @@ require( ["js/qlik"], (qlik) => {
 	checkboxButtons.forEach(button => {
 	    button.addEventListener('click', function(event) { handleCheckboxClick(event); });
 	});
-//	checkbox1_1Button.addEventListener('click', function() { handleGetJudgeData(); });
+
 
 	function handleCheckboxClick(event) {
 		let button = event.target;

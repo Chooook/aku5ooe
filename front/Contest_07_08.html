@@ -24,8 +24,18 @@
   </head>
   <body>
     <header class="bg fixed-top" id="header">
-      <img class="header-image" src="contest_name_1.png" alt="logo" height="35px" />
-      <button id="btn-end-vote" class="btn btn-custom" title="Необходимо 15 положительных голосов" disabled>
+      <img
+        class="header-image"
+        src="contest_name_1.png"
+        alt="logo"
+        height="35px"
+      />
+      <button
+        id="btn-end-vote"
+        class="btn btn-custom"
+        title="Необходимо 15 положительных голосов"
+        disabled
+      >
         Завершить оценку
       </button>
       <div class="counter">
@@ -43,12 +53,15 @@
             </div>
           </div>
         </div>
-        <div class="content-left-inside content-left-sidebar" id="left-sidebar" style="overflow-y: auto"></div>
+        <div
+          class="content-left-inside content-left-sidebar"
+          id="left-sidebar"
+          style="overflow-y: auto"
+        ></div>
       </div>
-      <button class="content-left-toggle">
-        <div class="content-left-triangle-left"></div>
-      </button>
+
       <div class="content-center">
+        <div id="content0" class="content-section">Добрый день!</div>
         <div id="content1" class="content-section">
           <img class="img-resize" src="test.jpg" alt="" />
         </div>
@@ -168,19 +181,7 @@
           <img class="img-resize" src="test.jpg" alt="" />
           <br />
         </div>
-      </div>
-
-      <div class="sidebar p-3 d-flex" id="right-sidebar">
-        <div class="participant-wrapper" align="center">
-          <img id="participant-image" src="logo_cup.png" alt="" />
-          <div class="participant-info-wrapper">
-            <div class="participant-name"></div>
-            <div class="participant-tb"></div>
-            <div class="participant-department"></div>
-            <div class="participant-position"></div>
-          </div>
-        </div>
-        <div style="top: 0">
+        <div class="document-range">
           <p style="text-align: center">Размер документа</p>
           <input
             class="form-range"
@@ -191,6 +192,19 @@
             value="1000"
             oninput="resizeImage(this.value)"
           />
+        </div>
+      </div>
+
+      <button class="content-right-toggle">
+        <div class="content-right-triangle-right"></div>
+      </button>
+      <div class="sidebar p-3 d-flex content-right" id="right-sidebar">
+        <div class="participant-wrapper" align="center">
+          <img id="participant-image" src="logo_cup.png" alt="" />
+          <div class="participant-info-wrapper">
+            <div class="participant-name"></div>
+            <div class="participant-information"></div>
+          </div>
         </div>
       </div>
     </div>

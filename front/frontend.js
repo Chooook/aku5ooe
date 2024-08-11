@@ -12,8 +12,12 @@ function resizeImage(width) {
   setTimeout(() => {
     const contentCenter = document.querySelector('.content-center');
     const contentCenterWidth = contentCenter.offsetWidth;
-    const contentCenterImages = document.querySelectorAll('.content-center > div');
-    const maxImageWidth = Math.max(...Array.from(contentCenterImages).map((el) => el.offsetWidth));
+    const contentCenterImages = document.querySelectorAll(
+      '.content-center > div'
+    );
+    const maxImageWidth = Math.max(
+      ...Array.from(contentCenterImages).map((el) => el.offsetWidth)
+    );
     if (contentCenterWidth < maxImageWidth) {
       contentCenter.classList.add('alignStart');
       contentCenter.classList.remove('alignCenter');
@@ -34,8 +38,12 @@ function formatStorageCheckboxes(checkboxes) {
   const arr = copiedCheckboxes.split(',');
   const resultArr = [];
   for (let i = 0; i < arr.length; i += 2) {
-    resultArr.push([arr[i].toLowerCase() === 'true', arr[i + 1].toLowerCase() === 'true']);
+    resultArr.push([
+      arr[i].toLowerCase() === 'true',
+      arr[i + 1].toLowerCase() === 'true',
+    ]);
   }
+
   return resultArr;
 }
 
@@ -69,10 +77,18 @@ function handleCheckboxChange(checkbox) {
 function updateCheckboxes(checkbox, index) {
   const isLikeButton = checkbox.id.endsWith('1');
   const isChecked = checkbox.checked;
-  const likeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_1`);
-  const dislikeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_2`);
-  const likeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_1"]`);
-  const dislikeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_2"]`);
+  const likeCheckbox = document.querySelector(
+    `#${checkbox.id.slice(0, checkbox.id.length - 2)}_1`
+  );
+  const dislikeCheckbox = document.querySelector(
+    `#${checkbox.id.slice(0, checkbox.id.length - 2)}_2`
+  );
+  const likeLabel = document.querySelector(
+    `label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_1"]`
+  );
+  const dislikeLabel = document.querySelector(
+    `label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_2"]`
+  );
 
   // логика для того, чтобы убрать чек лайка, если поставлен дислайк, и наоборот
   if (isLikeButton && isChecked) {
@@ -162,21 +178,23 @@ document.getElementById('btn-end-vote').addEventListener('click', function (e) {
 });
 
 // логика для скрытия и открытия левой панели
-const contentLeft = document.querySelector('.content-left');
-const contentLeftButton = document.querySelector('.content-left-toggle');
-const contentLeftTriangle = document.querySelector('.content-left-triangle-left');
+const contentRight = document.querySelector('.content-right');
+const contentRightButton = document.querySelector('.content-right-toggle');
+const contentRightTriangle = document.querySelector(
+  '.content-right-triangle-right'
+);
 const contentLeftInside = document.querySelectorAll('.content-left-inside');
 const contentCenter = document.querySelector('.content-center');
-contentLeftButton.addEventListener('click', () => {
-  contentLeft.classList.toggle('content-left-invisible');
+contentRightButton.addEventListener('click', () => {
+  contentRight.classList.toggle('content-right-invisible');
   contentCenter.classList.toggle('content-center-extended');
-  contentLeftInside.forEach((el) => el.classList.toggle('content-left-invisible'));
-  if (Array.from(contentLeft.classList).includes('content-left-invisible')) {
-    contentLeftTriangle.classList.add('content-left-triangle-right');
-    contentLeftTriangle.classList.remove('content-left-triangle-left');
+
+  if (Array.from(contentRight.classList).includes('content-right-invisible')) {
+    contentRightTriangle.classList.add('content-right-triangle-left');
+    contentRightTriangle.classList.remove('content-right-triangle-right');
   } else {
-    contentLeftTriangle.classList.add('content-left-triangle-left');
-    contentLeftTriangle.classList.remove('content-left-triangle-right');
+    contentRightTriangle.classList.add('content-right-triangle-right');
+    contentRightTriangle.classList.remove('content-right-triangle-left');
   }
 });
 
@@ -231,13 +249,12 @@ function highlightButton(buttonId) {
 function showParticipantInformation(participant) {
   const chosenParticipant = participantsInfo[participant];
   const participantName = document.querySelector('.participant-name');
-  const participantTb = document.querySelector('.participant-tb');
-  const participantDepartment = document.querySelector('.participant-department');
-  const participantPosition = document.querySelector('.participant-position');
+  const participantInformation = document.querySelector(
+    '.participant-information'
+  );
+
   participantName.textContent = participant;
-  participantDepartment.textContent = `Отдел: ${chosenParticipant['department']}`;
-  participantTb.textContent = `Банк: ${chosenParticipant['tb']}`;
-  participantPosition.textContent = `Должность: ${chosenParticipant['position']}`;
+  participantInformation.textContent = chosenParticipant['information'];
 }
 
 const participants = [
@@ -275,19 +292,15 @@ const participants = [
 
 const participantsInfo = {
   'Анна Абрашкина': {
-    position: 'Главный эксперт по цифровым технологиям аудита',
-    tb: 'УБ',
-    department: 'ОАКБ',
+    information:
+      'Ведущий специалист по ЦТА Отдела аудита корпоративного бизнеса Волго-вятского банка',
   },
   'Валентина Гусачик': {
-    position: 'Эксперт по цифровым технологиям аудита',
-    tb: 'ББ',
-    department: 'ОПИР',
+    information:
+      'Эксперт по цифровым технологиям Отдела планирования и развития Байкальского банка',
   },
   'Кирилл Лисенков': {
-    position: 'Начальник отдела',
-    tb: 'ЮЗБ',
-    department: 'Руководство',
+    information: 'Начальник Отдела аудита розничного бизнеса Уральского Банка',
   },
 };
 
@@ -359,7 +372,9 @@ function createMenuItems() {
     sidebar.appendChild(newItem);
 
     // задаем источники картинок в зависимости от имени участника
-    const participantImage = document.querySelector(`#content${index + 1} > img`);
+    const participantImage = document.querySelector(
+      `#content${index + 1} > img`
+    );
     participantImage.src = `essays/${participant}.jpg`;
     participantImage.style.width = '1000px';
   });
