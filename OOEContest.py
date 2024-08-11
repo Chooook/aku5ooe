@@ -93,6 +93,7 @@ class OOEContest:
         if not smbclient.path.exists(alt_path):
             self.__create_login_files(login)
         with open_file(alt_path, 'rb') as f:
+            # decrypt читает false как False, ломается json
             decrypted = self.fernet.decrypt(f.read()).decode().lower()
             judge_data = json.loads(decrypted)
         return judge_data
