@@ -2,6 +2,7 @@ import json
 import os
 from string import Template
 
+import pandas as pd
 from cryptography.fernet import Fernet
 import smbclient
 from smbclient.shutil import open_file
@@ -26,11 +27,49 @@ class OOEContest:
         # key_str = key.decode()  # Преобразуем ключ в строку
         self.key = '-bOZDhcq6g_24sRETJcsZ_LmLHfQ2hGJIM8jhJ37Mbw='.encode()
         self.fernet = Fernet(self.key)
-        # Usage:
-        # encrypted_message = self.fernet.encrypt(b"info")
-        # decrypted_message = self.fernet.decrypt(encrypted_message)
-        # b"info" == decrypted_message.decode()
 
+        self.judges_dict = {
+            'login': 'Егор Батарчук',
+            'login1': '2',
+            'login2': '3',
+            'login3': '4',
+            'login4': '5',
+            'login5': '6',
+            'login6': '7',
+            'login7': '8',
+        }
+        self.participants_dict = {
+            'participant1': 'Батарчук Егор',
+            'participant2': '2',
+            'participant3': '3',
+            'participant4': '4',
+            'participant5': '5',
+            'participant6': '6',
+            'participant7': '7',
+            'participant8': '8',
+            'participant9': '9',
+            'participant10': '10',
+            'participant11': '11',
+            'participant12': '12',
+            'participant13': '13',
+            'participant14': '14',
+            'participant15': '15',
+            'participant16': '16',
+            'participant17': '17',
+            'participant18': '18',
+            'participant19': '19',
+            'participant20': '20',
+            'participant21': '21',
+            'participant22': '22',
+            'participant23': '23',
+            'participant24': '24',
+            'participant25': '25',
+            'participant26': '26',
+            'participant27': '27',
+            'participant28': '28',
+            'participant29': '29',
+            'participant30': '30',
+        }
         self.default_data = json.dumps(
             {"finished": False,
              "participants": {
@@ -88,8 +127,8 @@ class OOEContest:
         alt_path = os.path.join(self.alt_output_path, filename)
         return path, alt_path
 
-    def __read_file(self, login: str):
-        _, alt_path = self.__get_paths(login)
+    def __read_file(self, login: str, finish=False):
+        _, alt_path = self.__get_paths(login, finish)
         if not smbclient.path.exists(alt_path):
             self.__create_login_files(login)
         with open_file(alt_path, 'rb') as f:
@@ -173,10 +212,10 @@ class OOEContest:
         self.__write_files(login, judge_data)
 
         participants = list(judge_data['participants'].keys())
-        positive_votes = {login: [
+        positive_votes = [
             participant for participant in participants
             if judge_data['participants'][participant]['like'] is True
-        ]}
+        ]
 
         self.__write_files(login, positive_votes, finish=True)
 
@@ -189,3 +228,27 @@ class OOEContest:
         judge_data['finished'] = False
         self.__write_files(login, judge_data)
         return json.dumps(judge_data)
+
+    def save_results_to_excel(self):
+        """Метод для сохранения результатов голосования в excel файл"""
+        columns = (
+                ['Ранг']
+                + list(self.judges_dict.values())
+                + ['Сумма голосов']
+        )
+        index = list(self.participants_dict.values()) + ['Сумма голосов']
+        result_df = pd.DataFrame(
+            index=index, columns=columns)
+        for login in self.judges_dict.keys():
+            judge_name = self.judges_dict[login]
+            try:
+                judge_data = self.__read_file(login, finish=True)
+            except OSError:
+                continue  # если результатов судьи нет
+            for participant in judge_data:
+                participant_name = self.participants_dict[participant]
+                result_df.loc[participant_name, judge_name] = 1
+            result_df.loc['Сумма голосов', judge_name] = result_df[
+                judge_name].sum()
+        result_df['Сумма голосов'] = result_df.sum(axis=1)
+        result_df.to_excel('results.xlsx')
