@@ -12,12 +12,8 @@ function resizeImage(width) {
   setTimeout(() => {
     const contentCenter = document.querySelector('.content-center');
     const contentCenterWidth = contentCenter.offsetWidth;
-    const contentCenterImages = document.querySelectorAll(
-      '.content-center > div'
-    );
-    const maxImageWidth = Math.max(
-      ...Array.from(contentCenterImages).map((el) => el.offsetWidth)
-    );
+    const contentCenterImages = document.querySelectorAll('.content-center > div');
+    const maxImageWidth = Math.max(...Array.from(contentCenterImages).map((el) => el.offsetWidth));
     if (contentCenterWidth < maxImageWidth) {
       contentCenter.classList.add('alignStart');
       contentCenter.classList.remove('alignCenter');
@@ -35,18 +31,11 @@ let checkboxes = localStorage.getItem('checkboxes')
 
 function formatStorageCheckboxes(checkboxes) {
   const copiedCheckboxes = JSON.parse(JSON.stringify(checkboxes));
-  console.log(copiedCheckboxes);
   const arr = copiedCheckboxes.split(',');
-  console.log(arr);
   const resultArr = [];
   for (let i = 0; i < arr.length; i += 2) {
-    resultArr.push([
-      arr[i].toLowerCase() === 'true',
-      arr[i + 1].toLowerCase() === 'true',
-    ]);
+    resultArr.push([arr[i].toLowerCase() === 'true', arr[i + 1].toLowerCase() === 'true']);
   }
-  console.log(resultArr);
-
   return resultArr;
 }
 
@@ -80,18 +69,10 @@ function handleCheckboxChange(checkbox) {
 function updateCheckboxes(checkbox, index) {
   const isLikeButton = checkbox.id.endsWith('1');
   const isChecked = checkbox.checked;
-  const likeCheckbox = document.querySelector(
-    `#${checkbox.id.slice(0, checkbox.id.length - 2)}_1`
-  );
-  const dislikeCheckbox = document.querySelector(
-    `#${checkbox.id.slice(0, checkbox.id.length - 2)}_2`
-  );
-  const likeLabel = document.querySelector(
-    `label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_1"]`
-  );
-  const dislikeLabel = document.querySelector(
-    `label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_2"]`
-  );
+  const likeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_1`);
+  const dislikeCheckbox = document.querySelector(`#${checkbox.id.slice(0, checkbox.id.length - 2)}_2`);
+  const likeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_1"]`);
+  const dislikeLabel = document.querySelector(`label[for="${checkbox.id.slice(0, checkbox.id.length - 2)}_2"]`);
 
   // логика для того, чтобы убрать чек лайка, если поставлен дислайк, и наоборот
   if (isLikeButton && isChecked) {
@@ -183,17 +164,13 @@ document.getElementById('btn-end-vote').addEventListener('click', function (e) {
 // логика для скрытия и открытия левой панели
 const contentLeft = document.querySelector('.content-left');
 const contentLeftButton = document.querySelector('.content-left-toggle');
-const contentLeftTriangle = document.querySelector(
-  '.content-left-triangle-left'
-);
+const contentLeftTriangle = document.querySelector('.content-left-triangle-left');
 const contentLeftInside = document.querySelectorAll('.content-left-inside');
 const contentCenter = document.querySelector('.content-center');
 contentLeftButton.addEventListener('click', () => {
   contentLeft.classList.toggle('content-left-invisible');
   contentCenter.classList.toggle('content-center-extended');
-  contentLeftInside.forEach((el) =>
-    el.classList.toggle('content-left-invisible')
-  );
+  contentLeftInside.forEach((el) => el.classList.toggle('content-left-invisible'));
   if (Array.from(contentLeft.classList).includes('content-left-invisible')) {
     contentLeftTriangle.classList.add('content-left-triangle-right');
     contentLeftTriangle.classList.remove('content-left-triangle-left');
@@ -205,7 +182,6 @@ contentLeftButton.addEventListener('click', () => {
 
 // Функция для подсчета количества true
 function countTrue(checkboxes) {
-  console.log(checkboxes);
   let count = 0;
   checkboxes.forEach((pair) => {
     if (pair[0] === true) {
@@ -241,10 +217,33 @@ function showContent(buttonId) {
   document.getElementById('part-name').textContent = participants[num - 1];
 }
 
+function highlightButton(buttonId) {
+  const buttons = document.querySelectorAll('button[id^="participant"]');
+  buttons.forEach((button) => {
+    if (button.id === buttonId) {
+      button.classList.add('participantButton-highlighted');
+    } else {
+      button.classList.remove('participantButton-highlighted');
+    }
+  });
+}
+
+function showParticipantInformation(participant) {
+  const chosenParticipant = participantsInfo[participant];
+  const participantName = document.querySelector('.participant-name');
+  const participantTb = document.querySelector('.participant-tb');
+  const participantDepartment = document.querySelector('.participant-department');
+  const participantPosition = document.querySelector('.participant-position');
+  participantName.textContent = participant;
+  participantDepartment.textContent = `Отдел: ${chosenParticipant['department']}`;
+  participantTb.textContent = `Банк: ${chosenParticipant['tb']}`;
+  participantPosition.textContent = `Должность: ${chosenParticipant['position']}`;
+}
+
 const participants = [
-  'Александр Длинноименов',
-  'Пётр',
-  'Вася',
+  'Анна Абрашкина',
+  'Валентина Гусачик',
+  'Кирилл Лисенков',
   'Саша',
   'Пётр',
   'Вася',
@@ -273,6 +272,25 @@ const participants = [
   'Пётр',
   'Вася',
 ];
+
+const participantsInfo = {
+  'Анна Абрашкина': {
+    position: 'Главный эксперт по цифровым технологиям аудита',
+    tb: 'УБ',
+    department: 'ОАКБ',
+  },
+  'Валентина Гусачик': {
+    position: 'Эксперт по цифровым технологиям аудита',
+    tb: 'ББ',
+    department: 'ОПИР',
+  },
+  'Кирилл Лисенков': {
+    position: 'Начальник отдела',
+    tb: 'ЮЗБ',
+    department: 'Руководство',
+  },
+};
+
 function createMenuItems() {
   let sidebar = document.getElementById('left-sidebar');
   participants.forEach(function (participant, index) {
@@ -284,6 +302,8 @@ function createMenuItems() {
     newButton.textContent = participant;
     newButton.id = 'participant' + (index + 1);
     newButton.onclick = function () {
+      highlightButton(newButton.id);
+      showParticipantInformation(participant);
       showContent(newButton.id);
     };
     newItem.appendChild(newButton);
@@ -337,6 +357,11 @@ function createMenuItems() {
     newLabel2.appendChild(newI2);
 
     sidebar.appendChild(newItem);
+
+    // задаем источники картинок в зависимости от имени участника
+    const participantImage = document.querySelector(`#content${index + 1} > img`);
+    participantImage.src = `essays/${participant}.jpg`;
+    participantImage.style.width = '1000px';
   });
 }
 

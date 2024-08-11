@@ -36,9 +36,9 @@ header {
 #btn-end-vote:enabled {
   cursor: pointer; /* Курсор при наведении */
 }
-#btn-end-vote:enabled:hover {
+/* #btn-end-vote:enabled:hover {
   opacity: 0.85;
-}
+} */
 #btn-end-vote:disabled {
   cursor: not-allowed;
   opacity: 0.3;
@@ -123,6 +123,22 @@ header {
   color: white;
 }
 
+.participantButton-highlighted {
+  position: relative;
+}
+
+.participantButton-highlighted::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: black;
+  border-radius: 50%;
+  position: absolute;
+  left: -16px; /* Adjust to position the point before the button */
+  top: 50%;
+  transform: translateY(-50%);
+}
 /*.form-check-label i.fas.fa-heart:hover {*/
 /*    color: #146c43;*/
 /*}*/
@@ -160,6 +176,30 @@ header {
   right: 0;
   top: 80px;
 }
+
+.participant-wrapper {
+  width: 100%;
+}
+
+.participant-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.participant-name {
+  font-weight: 700;
+}
+
+.participant-name,
+.participant-position,
+.participant-tb,
+.participant-department {
+  text-align: start;
+}
+
 .img-resize {
   transition: width 0.3s; /* Плавный переход */
 }
