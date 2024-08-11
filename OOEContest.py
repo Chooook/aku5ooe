@@ -17,8 +17,8 @@ class OOEContest:
         self.json_filename_template = Template('$login.json')
         self.finished_json_filename_template = Template(
             'results_$login.json')
-        self.output_path = '.'
-        self.alt_output_path = './alt'
+        self.output_path = r''
+        self.alt_output_path = r''
         # self.current_dir = os.path.dirname(os.path.realpath(__file__))
 
     @staticmethod
@@ -267,3 +267,19 @@ class OOEContest:
             json.dump(positive_votes, f, indent=2)
 
         return json.dumps(judge_data)
+
+    def renew_voting(self, login: str):
+        """Метод для перезапуска голосования по логину судьи"""
+
+        path, alt_path = self.get_paths(login)
+        if not os.path.exists(alt_path):
+            self.create_login_files(login)
+
+        with open(alt_path, 'r') as f:
+            judge_data = json.load(f)
+        judge_data['finished'] = False
+
+        with open(path, 'w') as f:
+            json.dump(judge_data, f, indent=2)
+        with open(alt_path, 'w') as f:
+            json.dump(judge_data, f, indent=2)
