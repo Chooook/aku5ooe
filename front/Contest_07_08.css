@@ -35,10 +35,23 @@ header {
 }
 #btn-end-vote:enabled {
   cursor: pointer; /* Курсор при наведении */
+  animation: flicker 1.5s infinite ease-in-out;
 }
-#btn-end-vote:enabled:hover {
+@keyframes flicker {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* #btn-end-vote:enabled:hover {
   opacity: 0.85;
-}
+} */
 #btn-end-vote:disabled {
   cursor: not-allowed;
   opacity: 0.3;
@@ -123,6 +136,22 @@ header {
   color: white;
 }
 
+.participantButton-highlighted {
+  position: relative;
+}
+
+.participantButton-highlighted::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: black;
+  border-radius: 50%;
+  position: absolute;
+  left: -16px; /* Adjust to position the point before the button */
+  top: 50%;
+  transform: translateY(-50%);
+}
 /*.form-check-label i.fas.fa-heart:hover {*/
 /*    color: #146c43;*/
 /*}*/
@@ -152,14 +181,28 @@ header {
   padding: 1rem;
   background-color: #fafafa;
 }
-#right-sidebar {
-  height: calc(100% - 80px);
-  position: fixed;
-  width: 30vh;
-  min-width: 300px;
-  right: 0;
-  top: 80px;
+
+.participant-wrapper {
+  width: 100%;
 }
+
+.participant-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.participant-name {
+  font-weight: 700;
+}
+
+.participant-name,
+.participant-information {
+  text-align: center;
+}
+
 .img-resize {
   transition: width 0.3s; /* Плавный переход */
 }
@@ -229,21 +272,29 @@ header {
   position: relative;
   align-items: center;
   width: 40vh;
-  min-width: 400px;
   height: 100%;
   opacity: 1;
   transition: opacity 0.3s ease;
 }
 
-.content-left-toggle {
+.content-right {
+  height: calc(100% - 80px);
+  position: fixed;
+  width: 30vh;
+  right: 0;
+  top: 80px;
+}
+
+.content-right-toggle {
   width: 25px;
   height: 100%;
   border: none;
   display: flex;
   align-items: center;
+  z-index: 100;
 }
 
-.content-left-triangle-left {
+.content-right-triangle-left {
   width: 0;
   height: 0;
   border-top: 15px solid transparent;
@@ -251,7 +302,7 @@ header {
   border-right: 15px solid black;
 }
 
-.content-left-triangle-right {
+.content-right-triangle-right {
   width: 0;
   height: 0;
   border-top: 15px solid transparent;
@@ -259,7 +310,7 @@ header {
   border-left: 15px solid black;
 }
 
-.content-left-invisible {
+.content-right-invisible {
   width: 0px;
   max-width: 0px;
   min-width: 0px;
@@ -269,15 +320,22 @@ header {
 
 .content-center {
   width: calc(100% - 70vh - 25px);
-  height: 100%;
+  height: 90%;
   overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .content-center-extended {
   width: calc(100% - 30vh - 25px);
+}
+
+.document-range {
+  position: fixed;
+  bottom: 10px;
+  align-self: center;
 }
 
 .total-essays {
@@ -300,7 +358,7 @@ header {
 .success-modal {
   display: none; /* Hidden by default */
   position: fixed;
-  z-index: 1;
+  z-index: 101;
   left: 0;
   top: 0;
   width: 100%;

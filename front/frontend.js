@@ -35,9 +35,7 @@ let checkboxes = localStorage.getItem('checkboxes')
 
 function formatStorageCheckboxes(checkboxes) {
   const copiedCheckboxes = JSON.parse(JSON.stringify(checkboxes));
-  console.log(copiedCheckboxes);
   const arr = copiedCheckboxes.split(',');
-  console.log(arr);
   const resultArr = [];
   for (let i = 0; i < arr.length; i += 2) {
     resultArr.push([
@@ -45,7 +43,6 @@ function formatStorageCheckboxes(checkboxes) {
       arr[i + 1].toLowerCase() === 'true',
     ]);
   }
-  console.log(resultArr);
 
   return resultArr;
 }
@@ -181,31 +178,28 @@ document.getElementById('btn-end-vote').addEventListener('click', function (e) {
 });
 
 // логика для скрытия и открытия левой панели
-const contentLeft = document.querySelector('.content-left');
-const contentLeftButton = document.querySelector('.content-left-toggle');
-const contentLeftTriangle = document.querySelector(
-  '.content-left-triangle-left'
+const contentRight = document.querySelector('.content-right');
+const contentRightButton = document.querySelector('.content-right-toggle');
+const contentRightTriangle = document.querySelector(
+  '.content-right-triangle-right'
 );
 const contentLeftInside = document.querySelectorAll('.content-left-inside');
 const contentCenter = document.querySelector('.content-center');
-contentLeftButton.addEventListener('click', () => {
-  contentLeft.classList.toggle('content-left-invisible');
+contentRightButton.addEventListener('click', () => {
+  contentRight.classList.toggle('content-right-invisible');
   contentCenter.classList.toggle('content-center-extended');
-  contentLeftInside.forEach((el) =>
-    el.classList.toggle('content-left-invisible')
-  );
-  if (Array.from(contentLeft.classList).includes('content-left-invisible')) {
-    contentLeftTriangle.classList.add('content-left-triangle-right');
-    contentLeftTriangle.classList.remove('content-left-triangle-left');
+
+  if (Array.from(contentRight.classList).includes('content-right-invisible')) {
+    contentRightTriangle.classList.add('content-right-triangle-left');
+    contentRightTriangle.classList.remove('content-right-triangle-right');
   } else {
-    contentLeftTriangle.classList.add('content-left-triangle-left');
-    contentLeftTriangle.classList.remove('content-left-triangle-right');
+    contentRightTriangle.classList.add('content-right-triangle-right');
+    contentRightTriangle.classList.remove('content-right-triangle-left');
   }
 });
 
 // Функция для подсчета количества true
 function countTrue(checkboxes) {
-  console.log(checkboxes);
   let count = 0;
   checkboxes.forEach((pair) => {
     if (pair[0] === true) {
@@ -241,10 +235,32 @@ function showContent(buttonId) {
   document.getElementById('part-name').textContent = participants[num - 1];
 }
 
+function highlightButton(buttonId) {
+  const buttons = document.querySelectorAll('button[id^="participant"]');
+  buttons.forEach((button) => {
+    if (button.id === buttonId) {
+      button.classList.add('participantButton-highlighted');
+    } else {
+      button.classList.remove('participantButton-highlighted');
+    }
+  });
+}
+
+function showParticipantInformation(participant) {
+  const chosenParticipant = participantsInfo[participant];
+  const participantName = document.querySelector('.participant-name');
+  const participantInformation = document.querySelector(
+    '.participant-information'
+  );
+
+  participantName.textContent = participant;
+  participantInformation.textContent = chosenParticipant['information'];
+}
+
 const participants = [
-  'Александр Длинноименов',
-  'Пётр',
-  'Вася',
+  'Анна Абрашкина',
+  'Валентина Гусачик',
+  'Кирилл Лисенков',
   'Саша',
   'Пётр',
   'Вася',
@@ -273,6 +289,21 @@ const participants = [
   'Пётр',
   'Вася',
 ];
+
+const participantsInfo = {
+  'Анна Абрашкина': {
+    information:
+      'Ведущий специалист по ЦТА Отдела аудита корпоративного бизнеса Волго-вятского банка',
+  },
+  'Валентина Гусачик': {
+    information:
+      'Эксперт по цифровым технологиям Отдела планирования и развития Байкальского банка',
+  },
+  'Кирилл Лисенков': {
+    information: 'Начальник Отдела аудита розничного бизнеса Уральского Банка',
+  },
+};
+
 function createMenuItems() {
   let sidebar = document.getElementById('left-sidebar');
   participants.forEach(function (participant, index) {
@@ -284,6 +315,8 @@ function createMenuItems() {
     newButton.textContent = participant;
     newButton.id = 'participant' + (index + 1);
     newButton.onclick = function () {
+      highlightButton(newButton.id);
+      showParticipantInformation(participant);
       showContent(newButton.id);
     };
     newItem.appendChild(newButton);
@@ -337,6 +370,13 @@ function createMenuItems() {
     newLabel2.appendChild(newI2);
 
     sidebar.appendChild(newItem);
+
+    // задаем источники картинок в зависимости от имени участника
+    const participantImage = document.querySelector(
+      `#content${index + 1} > img`
+    );
+    participantImage.src = `essays/${participant}.jpg`;
+    participantImage.style.width = '1000px';
   });
 }
 
