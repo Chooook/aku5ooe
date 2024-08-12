@@ -226,6 +226,7 @@ function countAll(checkboxes) {
 }
 
 function showContent(buttonId) {
+  
   let num = buttonId.replace(/[^0-9]/g, '');
   document.querySelectorAll('.content-section').forEach((section) => {
     section.style.display = 'none';
@@ -258,49 +259,42 @@ function showParticipantInformation(participant) {
 }
 
 const participants = [
-  'Анна Абрашкина',
-  'Валентина Гусачик',
-  'Кирилл Лисенков',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
-  'Саша',
-  'Пётр',
-  'Вася',
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
+                "participant",
 ];
 
 const participantsInfo = {
-  'Анна Абрашкина': {
+  'participant': {
     information:
-      'Ведущий специалист по ЦТА Отдела аудита корпоративного бизнеса Волго-вятского банка',
-  },
-  'Валентина Гусачик': {
-    information:
-      'Эксперт по цифровым технологиям Отдела планирования и развития Байкальского банка',
-  },
-  'Кирилл Лисенков': {
-    information: 'Начальник Отдела аудита розничного бизнеса Уральского Банка',
+      'position',
   },
 };
 
@@ -375,7 +369,7 @@ function createMenuItems() {
     const participantImage = document.querySelector(
       `#content${index + 1} > img`
     );
-    participantImage.src = `essays/${participant}.jpg`;
+    participantImage.src = 'test.jpg';
     participantImage.style.width = '1000px';
   });
 }

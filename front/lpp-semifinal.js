@@ -1,3 +1,18 @@
+const userLoginsObject = {
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge',
+  'login': 'judge'
+}
 
 
 var prefix = window.location.pathname.substr( 0, window.location.pathname.toLowerCase().lastIndexOf( "/extensions" ) + 1 );
@@ -38,7 +53,13 @@ require( ["js/qlik"], (qlik) => {
 
 	var serverName = "AKU5";
 	var sseScriptName = "OOEContest.OOEContest"
-	var userLogin = fetchUserLogin();
+	var userLogin = localStorage.getItem('login') || fetchUserLogin();
+	if (localStorage.getItem('login')) {
+	console.log('here')
+	  const userLoginBlock = document.querySelector('#content0');
+	  userLoginBlock.textContent = `Добрый день, ${userLoginsObject[userLogin] || 'неизвестный пользователь'}`;
+	}
+	
 
 	var scriptExpressions = {
 		get_judge_data: {
@@ -56,11 +77,14 @@ require( ["js/qlik"], (qlik) => {
 	};
 
   	function fetchUserLogin() {
+	console.log('here')
   		return global.getAuthenticatedUser()
  			.then(response => {
  				const user = response.qReturn;
  				userLogin = user.split(';')[1].split('=')[1];
-				window.alert(userLogin);
+				const userLoginBlock = document.querySelector('#content0');
+	            userLoginBlock.textContent = `Добрый день, ${userLoginsObject[userLogin] || 'неизвестный пользователь'}`;
+				localStorage.setItem('login', userLogin);
 				return userLogin;
 
  			}).catch((error) => {
@@ -69,10 +93,11 @@ require( ["js/qlik"], (qlik) => {
  			});
   	}
 
+
 	const checkboxButtons = document.querySelectorAll('[id^="checkbox"]');
-	checkboxButtons.forEach(button => {
-	    button.addEventListener('click', function(event) { handleCheckboxClick(event); });
-	});
+//	checkboxButtons.forEach(button => {
+//	    button.addEventListener('click', function(event) { handleCheckboxClick(event); });
+//	});
 
 
 	function handleCheckboxClick(event) {
