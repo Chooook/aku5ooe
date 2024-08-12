@@ -13,9 +13,9 @@ class OOEContest:
     # TODO: добавить в init логин и передавать при вызове функций с mashup
     def __init__(self):
         """Класс для работы с голосованием по конкурсу"""
-        self.smb_server = ...
-        self.smb_user = ...
-        self.smb_pass = ...
+        self.smb_server = 'server'
+        self.smb_user = r'login'
+        self.smb_pass = 'pass'
         self.smb_session = self.__create_smb_session()
 
         # self.current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -23,53 +23,54 @@ class OOEContest:
         self.result_filename_template = Template(
             'results_$login.enc')
         self.output_path = r''
-        self.alt_output_path = r''
+        self.alt_output_path = r'alt'
         # key = Fernet.generate_key()
         # key_str = key.decode()  # Преобразуем ключ в строку
-        self.key = '-bOZDhcq6g_24sRETJcsZ_LmLHfQ2hGJIM8jhJ37Mbw='.encode()
+        self.key = 'fernet_key'.encode()
         self.fernet = Fernet(self.key)
 
         self.judges_dict = {
-            'login': 'Егор Батарчук',
-            'login1': '2',
-            'login2': '3',
-            'login3': '4',
-            'login4': '5',
-            'login5': '6',
-            'login6': '7',
-            'login7': '8',
+            'login1': 'judge1',
+            'login2': 'judge2',
+            'login3': 'judge3',
+            'login4': 'judge4',
+            'login5': 'judge5',
+            'login6': 'judge6',
+            'login7': 'judge7',
+            'login8': 'judge8',
         }
+
         self.participants_dict = {
-            'participant1': 'Батарчук Егор',
-            'participant2': '2',
-            'participant3': '3',
-            'participant4': '4',
-            'participant5': '5',
-            'participant6': '6',
-            'participant7': '7',
-            'participant8': '8',
-            'participant9': '9',
-            'participant10': '10',
-            'participant11': '11',
-            'participant12': '12',
-            'participant13': '13',
-            'participant14': '14',
-            'participant15': '15',
-            'participant16': '16',
-            'participant17': '17',
-            'participant18': '18',
-            'participant19': '19',
-            'participant20': '20',
-            'participant21': '21',
-            'participant22': '22',
-            'participant23': '23',
-            'participant24': '24',
-            'participant25': '25',
-            'participant26': '26',
-            'participant27': '27',
-            'participant28': '28',
-            'participant29': '29',
-            'participant30': '30',
+            'participant1':  'partname1',
+            'participant2':  'partname2',
+            'participant3':  'partname3',
+            'participant4':  'partname4',
+            'participant5':  'partname5',
+            'participant6':  'partname6',
+            'participant7':  'partname7',
+            'participant8':  'partname8',
+            'participant9':  'partname9',
+            'participant10': 'partname10',
+            'participant11': 'partname11',
+            'participant12': 'partname12',
+            'participant13': 'partname13',
+            'participant14': 'partname14',
+            'participant15': 'partname15',
+            'participant16': 'partname16',
+            'participant17': 'partname17',
+            'participant18': 'partname18',
+            'participant19': 'partname19',
+            'participant20': 'partname20',
+            'participant21': 'partname21',
+            'participant22': 'partname22',
+            'participant23': 'partname23',
+            'participant24': 'partname24',
+            'participant25': 'partname25',
+            'participant26': 'partname26',
+            'participant27': 'partname27',
+            'participant28': 'partname28',
+            'participant29': 'partname29',
+            'participant30': 'partname30',
         }
         self.default_data = json.dumps(
             {"finished": False,
@@ -117,6 +118,7 @@ class OOEContest:
             server=self.smb_server,
             username=self.smb_user,
             password=self.smb_pass)
+        # TODO: smb_client_session.disconnect()
         return smb_client_session
 
     def __get_paths(self, login: str, finish=False):
@@ -252,6 +254,7 @@ class OOEContest:
             result_df.loc['Сумма голосов', judge_name] = result_df[
                 judge_name].sum()
         result_df['Сумма голосов'] = result_df.sum(axis=1)
+
         result_output_path = os.path.join(self.output_path, 'all_results.xlsx')
         byte_stream = io.BytesIO()
         result_df.to_excel(byte_stream)
