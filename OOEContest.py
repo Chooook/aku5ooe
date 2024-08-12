@@ -251,4 +251,5 @@ class OOEContest:
             result_df.loc['Сумма голосов', judge_name] = result_df[
                 judge_name].sum()
         result_df['Сумма голосов'] = result_df.sum(axis=1)
-        result_df.to_excel('results.xlsx')
+        result_output_path = os.path.join(self.output_path, 'all_results.xlsx')
+        result_df.to_excel(result_output_path)
