@@ -1,3 +1,4 @@
+import io
 import json
 import os
 from string import Template
@@ -129,7 +130,7 @@ class OOEContest:
 
     def __read_file(self, login: str, finish=False):
         _, alt_path = self.__get_paths(login, finish)
-        if not smbclient.path.exists(alt_path):
+        if not smbclient.path.exists(alt_path) and not finish:
             self.__create_login_files(login)
         with open_file(alt_path, 'rb') as f:
             # decrypt читает false как False, ломается json
@@ -252,4 +253,9 @@ class OOEContest:
                 judge_name].sum()
         result_df['Сумма голосов'] = result_df.sum(axis=1)
         result_output_path = os.path.join(self.output_path, 'all_results.xlsx')
-        result_df.to_excel(result_output_path)
+        byte_stream = io.BytesIO()
+        result_df.to_excel(byte_stream)
+        byte_stream.seek(0)
+        with open_file(result_output_path, 'wb') as f:
+            f.write(byte_stream.read())
+        byte_stream.close()
