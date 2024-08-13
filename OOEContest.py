@@ -1,3 +1,5 @@
+"""Модуль для сохранения результатов соревнования"""
+
 import io
 import json
 import os
@@ -6,50 +8,41 @@ from string import Template
 import pandas as pd
 from cryptography.fernet import Fernet
 import smbclient
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from http import HTTPStatus
 from smbclient.shutil import open_file
 
 
 class OOEContest:
-    # TODO: добавить в init логин и передавать при вызове функций с mashup
     def __init__(self):
         """Класс для работы с голосованием по конкурсу"""
-        self.smb_server = 'server'
-        self.smb_user = r'login'
-        self.smb_pass = 'pass'
-        self.smb_session = self.__create_smb_session()
-
-        # self.current_dir = os.path.dirname(os.path.realpath(__file__))
+        current_dir = os.path.dirname(os.path.realpath(__file__))
         self.filename_template = Template('$login.enc')
-        self.result_filename_template = Template(
-            'results_$login.enc')
-        self.output_path = r''
-        self.alt_output_path = r'alt'
-        # key = Fernet.generate_key()
-        # key_str = key.decode()  # Преобразуем ключ в строку
-        self.key = 'fernet_key'.encode()
-        self.fernet = Fernet(self.key)
+        self.output_path = current_dir
+        self.fir_output_path = r'alt'
 
-        self.judges_dict = {
-            'login1': 'judge1',
-            'login2': 'judge2',
-            'login3': 'judge3',
-            'login4': 'judge4',
-            'login5': 'judge5',
-            'login6': 'judge6',
-            'login7': 'judge7',
-            'login8': 'judge8',
+        self.__judges_dict = {
+            'login1': 'judge1name',
+            'login2': 'judge2name',
+            'login3': 'judge3name',
+            'login4': 'judge4name',
+            'login5': 'judge5name',
+            'login6': 'judge6name',
+            'login7': 'judge7name',
+            'login8': 'judge8name',
         }
-
-        self.participants_dict = {
-            'participant1':  'partname1',
-            'participant2':  'partname2',
-            'participant3':  'partname3',
-            'participant4':  'partname4',
-            'participant5':  'partname5',
-            'participant6':  'partname6',
-            'participant7':  'partname7',
-            'participant8':  'partname8',
-            'participant9':  'partname9',
+        self.__participants_dict = {
+            'participant1': 'partname1',
+            'participant2': 'partname2',
+            'participant3': 'partname3',
+            'participant4': 'partname4',
+            'participant5': 'partname5',
+            'participant6': 'partname6',
+            'participant7': 'partname7',
+            'participant8': 'partname8',
+            'participant9': 'partname9',
             'participant10': 'partname10',
             'participant11': 'partname11',
             'participant12': 'partname12',
@@ -72,193 +65,147 @@ class OOEContest:
             'participant29': 'partname29',
             'participant30': 'partname30',
         }
-        self.default_data = json.dumps(
-            {"finished": False,
-             "participants": {
-                 "participant1": {"like": False, "dislike": False},
-                 "participant2": {"like": False, "dislike": False},
-                 "participant3": {"like": False, "dislike": False},
-                 "participant4": {"like": False, "dislike": False},
-                 "participant5": {"like": False, "dislike": False},
-                 "participant6": {"like": False, "dislike": False},
-                 "participant7": {"like": False, "dislike": False},
-                 "participant8": {"like": False, "dislike": False},
-                 "participant9": {"like": False, "dislike": False},
-                 "participant10": {"like": False, "dislike": False},
-                 "participant11": {"like": False, "dislike": False},
-                 "participant12": {"like": False, "dislike": False},
-                 "participant13": {"like": False, "dislike": False},
-                 "participant14": {"like": False, "dislike": False},
-                 "participant15": {"like": False, "dislike": False},
-                 "participant16": {"like": False, "dislike": False},
-                 "participant17": {"like": False, "dislike": False},
-                 "participant18": {"like": False, "dislike": False},
-                 "participant19": {"like": False, "dislike": False},
-                 "participant20": {"like": False, "dislike": False},
-                 "participant21": {"like": False, "dislike": False},
-                 "participant22": {"like": False, "dislike": False},
-                 "participant23": {"like": False, "dislike": False},
-                 "participant24": {"like": False, "dislike": False},
-                 "participant25": {"like": False, "dislike": False},
-                 "participant26": {"like": False, "dislike": False},
-                 "participant27": {"like": False, "dislike": False},
-                 "participant28": {"like": False, "dislike": False},
-                 "participant29": {"like": False, "dislike": False},
-                 "participant30": {"like": False, "dislike": False}}},
-            indent=2)
-        self.default_data_encrypted = self.fernet.encrypt(
-            self.default_data.encode())
+
+        str_rsa_public = """
+            -----BEGIN PUBLIC KEY-----
+            MIIBIDALBgkqhkiG9w0BAQoDggEPADCCAQoCggEBAMYqsw0eOig+dluYmF8986lc
+            Jqo/WSgL5RNeaI+ZXBeYsMON9iqvkJmaro3O1Y+VM3cwnAhMQxw59lFjv5BFVM6B
+            zWWisUMHia67HI89M7ktD/YbpB1zAQ9GNv65XRrpQyhYe/mbC43jXMZ/dpSzfqdb
+            gRXk741pAQZUJaAXN1ewgIL+JITV6VbtDJCUsn6OLKpidnBQs5OsfjDIk3jVaBBA
+            JeyAktuFq+8UJOSs9sep2mpY//HTGvbgBVZyCE13arnecgUZHolyfAUyh2Poqr/F
+            uEsrygp23JiE3EIXoESMcT1+e/+2BaMbGaSSt9qwdhLTWzn/JkkrP1/fztRbCfUC
+            AwEAAQ==
+            -----END PUBLIC KEY-----
+            """.replace(r'\n', '')
+        self.__rsa_public = serialization.load_pem_public_key(
+            str_rsa_public.encode(),
+            backend=default_backend()
+        )
 
     @staticmethod
     def showVersion():
+        """Версия программы для AKU5"""
         return 'OOEContest 2024-08-12 v0.4'
 
-    def __create_smb_session(self):
-        smb_client_session = smbclient.register_session(
-            server=self.smb_server,
-            username=self.smb_user,
-            password=self.smb_pass)
-        # TODO: smb_client_session.disconnect()
-        return smb_client_session
+    def save_data(self, login: str, data: str):
+        """Метод для сохранения данных о голосовании по логину судьи"""
 
-    def __get_paths(self, login: str, finish=False):
-        if finish:
-            filename = self.result_filename_template.substitute(login=login)
-        else:
+        # В переменной data должен быть логин и список чек-боксов с like
+        #  т.к. чек-бокс выглядит так: checkbox34_1, нужно извлечь номера
+        #  участников для правильного сохранения итога
+        # data = ['checkbox34_1', 'checkbox32_1', 'checkbox31_1',...]
+        def get_participant(checkbox: str):
+            checkbox = checkbox.split('_')[0]
+            number = ''.join(list(filter(lambda x: x.isdigit(), checkbox)))
+            return number
+        try:
+            fernet, fernet_key_encrypted = self.__get_fernet_key()
+            data = json.loads(data)
+            participants = [
+                f'participant{get_participant(checkbox)}' for checkbox in data
+            ]
+            to_write = '\n'.join(participants)  # like csv, header in filename
+            encrypted = fernet.encrypt(to_write.encode())
+            encrypted_with_key = (
+                    encrypted
+                    + fernet_key_encrypted
+                    + f'*****{str(len(fernet_key_encrypted))}'.encode()
+            )
             filename = self.filename_template.substitute(login=login)
-        path = os.path.join(self.output_path, filename)
-        alt_path = os.path.join(self.alt_output_path, filename)
-        return path, alt_path
+            path = os.path.join(self.output_path, filename)
+            with open(path, 'wb') as f:
+                f.write(encrypted_with_key)
+            return HTTPStatus(200)
+        except Exception:
+            return HTTPStatus(400)
 
-    def __read_file(self, login: str, finish=False):
-        _, alt_path = self.__get_paths(login, finish)
-        if not smbclient.path.exists(alt_path) and not finish:
-            self.__create_login_files(login)
-        with open_file(alt_path, 'rb') as f:
-            # decrypt читает false как False, ломается json
-            decrypted = self.fernet.decrypt(f.read()).decode().lower()
-            judge_data = json.loads(decrypted)
-        return judge_data
-
-    def __write_files(self, login: str, judge_data, finish=False):
-        path, alt_path = self.__get_paths(login, finish)
-        to_encrypt = json.dumps(judge_data, indent=2).encode()
-        encrypted_data = self.fernet.encrypt(to_encrypt)
-        with open_file(alt_path, 'wb') as f:
-            f.write(encrypted_data)
-        with open_file(path, 'wb') as f:
-            f.write(encrypted_data)
-
-    def __create_login_files(self, login: str):
-        path, alt_path = self.__get_paths(login)
-
-        with open_file(alt_path, 'wb') as f:
-            f.write(self.default_data_encrypted)
-        with open_file(path, 'wb') as f:
-            f.write(self.default_data_encrypted)
-
-    def get_judge_data(self, login: str = None):
-        """Метод для получения данных о голосовании по логину судьи"""
-        return json.dumps(self.__read_file(login))
-
-    def update_votes(self, login: str, new_data: str):
-        """Метод для обновления данных о голосовании по логину судьи"""
-        # добавить переменную на фронте для проверки, завершено голосование
-        # или нет, если да - обновление данных недоступно
-        judge_data = self.__read_file(login)
-        finished = judge_data['finished']
-        votes = judge_data['participants']
-
-        if finished:
-            return json.dumps(judge_data)
-
-        # на входе параметр new_data содержит id чекбокса
-        new_data = list(filter(lambda x: x.isdigit(), new_data))
-
-        if new_data.pop(-1) == '1':
-            vote_type = 'like'
-        else:
-            vote_type = 'dislike'
-
-        participant = f'participant{"".join(new_data)}'
-
-        if vote_type == 'like':
-            if votes[participant]['like'] is True:
-                votes[participant]['like'] = False
-            else:
-                votes[participant]['like'] = True
-                votes[participant]['dislike'] = False
-        else:
-            if votes[participant]['dislike'] is True:
-                votes[participant]['dislike'] = False
-            else:
-                votes[participant]['like'] = False
-                votes[participant]['dislike'] = True
-
-        self.__write_files(login, judge_data)
-        return json.dumps(judge_data)
-
-    def finish_voting(self, login: str):
-        """Метод для завершения голосования по логину судьи"""
-
-        judge_data = self.__read_file(login)
-
-        # для завершения голосования должно быть 15 голосов
-        counter = 0
-        for participant in judge_data['participants']:
-            if judge_data['participants'][participant]['like'] is True:
-                counter += 1
-        if counter != 15:
-            return json.dumps(judge_data)
-
-        judge_data['finished'] = True
-        self.__write_files(login, judge_data)
-
-        participants = list(judge_data['participants'].keys())
-        positive_votes = [
-            participant for participant in participants
-            if judge_data['participants'][participant]['like'] is True
-        ]
-
-        self.__write_files(login, positive_votes, finish=True)
-
-        return json.dumps(judge_data)
-
-    def renew_voting(self, login: str):
-        """Метод для перезапуска голосования по логину судьи"""
-
-        judge_data = self.__read_file(login)
-        judge_data['finished'] = False
-        self.__write_files(login, judge_data)
-        return json.dumps(judge_data)
-
-    def save_results_to_excel(self):
-        """Метод для сохранения результатов голосования в excel файл"""
-        columns = (
-                ['Ранг']
-                + list(self.judges_dict.values())
-                + ['Сумма голосов']
+    def __get_fernet_key(self):
+        """Метод для получения симметричного ключа для шифрования"""
+        fernet_key = Fernet.generate_key()
+        fernet = Fernet(fernet_key)
+        fernet_key_encrypted = self.__rsa_public.encrypt(
+            fernet_key,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
         )
-        index = list(self.participants_dict.values()) + ['Сумма голосов']
-        result_df = pd.DataFrame(
-            index=index, columns=columns)
-        for login in self.judges_dict.keys():
-            judge_name = self.judges_dict[login]
-            try:
-                judge_data = self.__read_file(login, finish=True)
-            except OSError:
-                continue  # если результатов судьи нет
-            for participant in judge_data:
-                participant_name = self.participants_dict[participant]
-                result_df.loc[participant_name, judge_name] = 1
-            result_df.loc['Сумма голосов', judge_name] = result_df[
-                judge_name].sum()
-        result_df['Сумма голосов'] = result_df.sum(axis=1)
+        return fernet, fernet_key_encrypted
 
-        result_output_path = os.path.join(self.output_path, 'all_results.xlsx')
-        byte_stream = io.BytesIO()
-        result_df.to_excel(byte_stream)
-        byte_stream.seek(0)
-        with open_file(result_output_path, 'wb') as f:
-            f.write(byte_stream.read())
-        byte_stream.close()
+    def __read_data(self, login: str, str_rsa_private: str):
+        """Метод для чтения данных о голосовании по логину"""
+        filename = self.filename_template.substitute(login=login)
+        path = os.path.join(self.output_path, filename)
+        with open(path, 'rb') as f:
+            data = f.read()
+        data, fernet_len = data.split(b'*****')
+        data, fernet_key_encrypted = data[:-256], data[-256:]
+        str_rsa_private = str_rsa_private.replace(r'\n', '')
+        private_rsa = serialization.load_pem_private_key(
+            str_rsa_private.encode(),
+            password=None,
+            backend=default_backend()
+        )
+        fernet_key = private_rsa.decrypt(
+            fernet_key_encrypted,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+        fernet = Fernet(fernet_key)
+        decrypted_data = fernet.decrypt(data).decode()
+        os.remove(path)
+        return decrypted_data
+
+    def save_results_to_excel(self, str_rsa_private: str):
+        """Метод для сохранения результатов голосования в excel файл"""
+        try:
+            columns = (
+                    ['Ранг']
+                    + list(self.__judges_dict.values())
+                    + ['Сумма голосов']
+            )
+            index = list(self.__participants_dict.values()) + ['Сумма голосов']
+            result_df = pd.DataFrame(index=index, columns=columns)
+            for login in self.__judges_dict.keys():
+                judge_name = self.__judges_dict.get(login)
+                try:
+                    judge_data = self.__read_data(login, str_rsa_private)
+                    judge_data = judge_data.split('\n')
+                except Exception:
+                    continue
+                for participant in judge_data:
+                    participant_name = self.__participants_dict.get(participant)
+                    result_df.loc[participant_name, judge_name] = 1
+                result_df.loc['Сумма голосов', judge_name] = result_df[
+                    judge_name].sum()
+            result_df['Сумма голосов'] = result_df.sum(axis=1)
+
+            result_output_path = os.path.join(
+                self.fir_output_path, 'results.xlsx')
+            byte_stream = io.BytesIO()
+            result_df.to_excel(byte_stream)
+            byte_stream.seek(0)
+            session = self.__create_smb_session()
+            # with open(result_output_path, 'wb') as f:
+            with open_file(result_output_path, 'wb') as f:
+                f.write(byte_stream.read())
+            session.disconnect()
+            byte_stream.close()
+            return HTTPStatus(200)
+        except Exception:
+            return HTTPStatus(400)
+
+    @staticmethod
+    def __create_smb_session():
+        """Метод для создания сессии протокола samba"""
+        smb_server = 'server'
+        smb_user = r'login'
+        smb_pass = 'pass'
+        return smbclient.register_session(
+            server=smb_server,
+            username=smb_user,
+            password=smb_pass)
