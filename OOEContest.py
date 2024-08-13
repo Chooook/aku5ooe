@@ -76,7 +76,7 @@ class OOEContest:
             uEsrygp23JiE3EIXoESMcT1+e/+2BaMbGaSSt9qwdhLTWzn/JkkrP1/fztRbCfUC
             AwEAAQ==
             -----END PUBLIC KEY-----
-            """.replace(r'\n', '')
+            """
         self.__rsa_public = serialization.load_pem_public_key(
             str_rsa_public.encode(),
             backend=default_backend()
