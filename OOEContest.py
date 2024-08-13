@@ -16,7 +16,7 @@ from smbclient.shutil import open_file
 
 
 class OOEContest:
-    def __init__(self):
+    def __init__(self, str_rsa_public=None):
         """Класс для работы с голосованием по конкурсу"""
         current_dir = os.path.dirname(os.path.realpath(__file__))
         self.filename_template = Template('$login.enc')
@@ -65,18 +65,18 @@ class OOEContest:
             'participant29': 'partname29',
             'participant30': 'partname30',
         }
-
-        str_rsa_public = """
-            -----BEGIN PUBLIC KEY-----
-            MIIBIDALBgkqhkiG9w0BAQoDggEPADCCAQoCggEBAMYqsw0eOig+dluYmF8986lc
-            Jqo/WSgL5RNeaI+ZXBeYsMON9iqvkJmaro3O1Y+VM3cwnAhMQxw59lFjv5BFVM6B
-            zWWisUMHia67HI89M7ktD/YbpB1zAQ9GNv65XRrpQyhYe/mbC43jXMZ/dpSzfqdb
-            gRXk741pAQZUJaAXN1ewgIL+JITV6VbtDJCUsn6OLKpidnBQs5OsfjDIk3jVaBBA
-            JeyAktuFq+8UJOSs9sep2mpY//HTGvbgBVZyCE13arnecgUZHolyfAUyh2Poqr/F
-            uEsrygp23JiE3EIXoESMcT1+e/+2BaMbGaSSt9qwdhLTWzn/JkkrP1/fztRbCfUC
-            AwEAAQ==
-            -----END PUBLIC KEY-----
-            """
+        if not str_rsa_public:
+            str_rsa_public = """
+                -----BEGIN PUBLIC KEY-----
+                MIIBIDALBgkqhkiG9w0BAQoDggEPADCCAQoCggEBAMYqsw0eOig+dluYmF8986lc
+                Jqo/WSgL5RNeaI+ZXBeYsMON9iqvkJmaro3O1Y+VM3cwnAhMQxw59lFjv5BFVM6B
+                zWWisUMHia67HI89M7ktD/YbpB1zAQ9GNv65XRrpQyhYe/mbC43jXMZ/dpSzfqdb
+                gRXk741pAQZUJaAXN1ewgIL+JITV6VbtDJCUsn6OLKpidnBQs5OsfjDIk3jVaBBA
+                JeyAktuFq+8UJOSs9sep2mpY//HTGvbgBVZyCE13arnecgUZHolyfAUyh2Poqr/F
+                uEsrygp23JiE3EIXoESMcT1+e/+2BaMbGaSSt9qwdhLTWzn/JkkrP1/fztRbCfUC
+                AwEAAQ==
+                -----END PUBLIC KEY-----
+                """
         self.__rsa_public = serialization.load_pem_public_key(
             str_rsa_public.encode(),
             backend=default_backend()
@@ -160,18 +160,24 @@ class OOEContest:
         os.remove(path)
         return decrypted_data
 
-    def save_results_to_excel(self, str_rsa_private: str):
+    def save_results_to_excel(
+            self, str_rsa_private: str, judges: str = None):
         """Метод для сохранения результатов голосования в excel файл"""
+        # judges = '{"login1": "judge1name", "login2": "judge2name",...}'
         try:
+            if judges:
+                judges_dict = json.loads(judges)
+            else:
+                judges_dict = self.__judges_dict
             columns = (
                     ['Ранг']
-                    + list(self.__judges_dict.values())
+                    + list(judges_dict.values())
                     + ['Сумма голосов']
             )
             index = list(self.__participants_dict.values()) + ['Сумма голосов']
             result_df = pd.DataFrame(index=index, columns=columns)
-            for login in self.__judges_dict.keys():
-                judge_name = self.__judges_dict.get(login)
+            for login in judges:
+                judge_name = judges_dict.get(login)
                 try:
                     judge_data = self.__read_data(login, str_rsa_private)
                     judge_data = judge_data.split('\n')
