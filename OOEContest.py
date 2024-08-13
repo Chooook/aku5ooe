@@ -93,7 +93,7 @@ class OOEContest:
         # В переменной data должен быть логин и список чек-боксов с like
         #  т.к. чек-бокс выглядит так: checkbox34_1, нужно извлечь номера
         #  участников для правильного сохранения итога
-        # data = ['checkbox34_1', 'checkbox32_1', 'checkbox31_1',...]
+        # data = '["checkbox34_1", "checkbox32_1", "checkbox31_1",...]'
         def get_participant(checkbox: str):
             checkbox = checkbox.split('_')[0]
             number = ''.join(list(filter(lambda x: x.isdigit(), checkbox)))
