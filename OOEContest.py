@@ -4,12 +4,13 @@ import os
 from string import Template
 
 import pandas as pd
-from cryptography.fernet import Fernet
 import smbclient
+from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from smbclient.shutil import open_file
+from smbprotocol.exceptions import SMBException
 
 
 class OOEContest:
@@ -18,7 +19,7 @@ class OOEContest:
         current_dir = os.path.dirname(os.path.realpath(__file__))
         self.output_dir = current_dir
         self.fir_output_dir = r'alt'
-        self.filename_template = Template('$login.enc')
+        self.filename_template = Template('${login}_${suffix}.enc')
 
         self.__judges = {
             'login1': 'judge1name',
@@ -63,7 +64,6 @@ class OOEContest:
             'participant30': 'partname30',
         }
 
-        self.__str_rsa_public = str_rsa_public
         self.__default_str_rsa_public = """
 -----BEGIN PUBLIC KEY-----
 MIIBIDALBgkqhkiG9w0BAQoDggEPADCCAQoCggEBAMYqsw0eOig+dluYmF8986lc
@@ -75,12 +75,6 @@ uEsrygp23JiE3EIXoESMcT1+e/+2BaMbGaSSt9qwdhLTWzn/JkkrP1/fztRbCfUC
 AwEAAQ==
 -----END PUBLIC KEY-----
 """
-        if not self.__str_rsa_public:
-            self.__str_rsa_public = self.__default_str_rsa_public
-        self.__rsa_public = serialization.load_pem_public_key(
-            self.__str_rsa_public.encode(),
-            backend=default_backend()
-        )
         self.__default_str_rsa_private = """
 -----BEGIN PRIVATE KEY-----
 MIIEuwIBADALBgkqhkiG9w0BAQoEggSnMIIEowIBAAKCAQEAyb2TG9kMmsXpRyEw
@@ -112,6 +106,22 @@ lx8fAoXVy9Dac4OTr4Hy
 -----END PRIVATE KEY-----
 """
 
+        self.__str_rsa_public = str_rsa_public
+        if not self.__str_rsa_public:
+            self.__str_rsa_public = self.__default_str_rsa_public
+
+        try:
+            self.__rsa_public = serialization.load_pem_public_key(
+                self.__str_rsa_public.encode(),
+                backend=default_backend()
+            )
+        except ValueError as e:
+            # logging.error(f'Not valid public key: {e}')
+            raise ValueError(f'Not valid public key: {e}')
+        except Exception as e:
+            # logging.error(f'Error while loading public key: {e}')
+            raise ValueError(f'Error while loading public key: {e}')
+
     @staticmethod
     def check_return(param):
         return str(param)
@@ -123,43 +133,46 @@ lx8fAoXVy9Dac4OTr4Hy
 
     def save_data(self, login: str, data: list):
         """Метод для сохранения данных о голосовании по логину судьи"""
-
-        # В переменной data должен быть логин и список чек-боксов с like
-        #  т.к. чек-бокс выглядит так: checkbox34_1, нужно извлечь номера
-        #  участников для правильного сохранения итога
-        # data = '["checkbox34_1", "checkbox32_1", "checkbox31_1",...]'
-        def get_participant(checkbox: str):
-            checkbox = checkbox.split('_')[0]
-            number = ''.join(list(filter(lambda x: x.isdigit(), checkbox)))
-            return number
-
         try:
-            fernet, fernet_key_encrypted = self.__get_fernet_key()
             participants = [
-                f'participant{get_participant(checkbox)}' for checkbox in data
+                f'participant{self.__get_participant(checkbox)}'
+                for checkbox in data
             ]
-            to_write = '\n'.join(participants)  # like csv, header in filename
-            encrypted = fernet.encrypt(to_write.encode())
-            encrypted_with_key = (
-                    encrypted
-                    + fernet_key_encrypted
-                    + f'*****{str(len(fernet_key_encrypted))}'.encode()
-            )
-            filename = self.filename_template.substitute(login=login)
-            output_path = os.path.join(self.output_dir, filename)
-            with open(output_path, 'wb') as f:
-                f.write(encrypted_with_key)
-            if self.__default_str_rsa_public == self.__str_rsa_public:
-                return '300'
-            return '200'
+            votes = '\n'.join(participants)
         except Exception as e:
-            return str(e)
+            # logging.error(f'Error while parsing data: {e}')
+            raise Exception(f'Error while parsing data: {e}')
 
-    def __get_fernet_key(self):
-        """Метод для получения симметричного ключа для шифрования"""
+        fernet, encrypted_fernet_key = self.__get_fernet()
+        encrypted_votes = fernet.encrypt(votes.encode())
+        encrypted_votes_and_key = (
+                encrypted_votes
+                + encrypted_fernet_key
+                + f'*****{str(len(encrypted_fernet_key))}'.encode()
+        )
+
+        output_path = self.__generate_unique_filename(login)
+        try:
+            with open(output_path, 'wb') as f:
+                f.write(encrypted_votes_and_key)
+                # logging
+        except Exception as e:
+            # logging
+            return str(e)
+        if self.__default_str_rsa_public == self.__str_rsa_public:
+            # logging
+            return '300'
+        # logging
+        return '200'
+
+    def __get_fernet(self):
+        """
+        Метод для получения объекта Fernet для симметричного шифрования
+        и зашифрованного ключа этого объекта
+        """
         fernet_key = Fernet.generate_key()
         fernet = Fernet(fernet_key)
-        fernet_key_encrypted = self.__rsa_public.encrypt(
+        encrypted_fernet_key = self.__rsa_public.encrypt(
             fernet_key,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -167,7 +180,33 @@ lx8fAoXVy9Dac4OTr4Hy
                 label=None
             )
         )
-        return fernet, fernet_key_encrypted
+        return fernet, encrypted_fernet_key
+
+    @staticmethod
+    def __get_participant(checkbox: str):
+        """Метод для получения номера участника из чек-бокса"""
+        # В переменной data должен быть список чек-боксов с like
+        #  т.к. чек-бокс выглядит так: checkbox34_1, нужно извлечь номера
+        #  участников для сохранения итога
+        #  data = ["checkbox34_1", "checkbox32_1", "checkbox31_1",...]
+        checkbox = checkbox.split('_')[0]
+        number = ''.join(list(filter(lambda x: x.isdigit(), checkbox)))
+        return number
+
+    def __generate_unique_filename(self, login):
+        """Метод для генерации нового имени файла"""
+        suffix = 0
+        filename = self.filename_template.substitute(
+            login=login, suffix=suffix)
+        output_path = os.path.join(self.output_dir, filename)
+
+        while os.path.exists(output_path):
+            suffix += 1
+            filename = self.filename_template.substitute(
+                login=login, suffix=suffix)
+            output_path = os.path.join(self.output_dir, filename)
+
+        return output_path
 
     def __read_data(self, login: str, str_rsa_private: bytes):
         """Метод для чтения данных о голосовании по логину"""
@@ -255,8 +294,12 @@ lx8fAoXVy9Dac4OTr4Hy
         smb_server = 'server'
         smb_user = r'login'
         smb_pass = 'pass'
-        session = smbclient.register_session(
-            server=smb_server,
-            username=smb_user,
-            password=smb_pass)
-        return session
+        try:
+            session = smbclient.register_session(
+                server=smb_server,
+                username=smb_user,
+                password=smb_pass)
+            return session
+        except SMBException as e:
+            print(e)
+            pass
