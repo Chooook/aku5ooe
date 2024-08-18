@@ -208,32 +208,6 @@ lx8fAoXVy9Dac4OTr4Hy
 
         return output_path
 
-    def __read_data(self, login: str, str_rsa_private: bytes):
-        """Метод для чтения данных о голосовании по логину"""
-        filename = self.filename_template.substitute(login=login)
-        output_path = os.path.join(self.output_dir, filename)
-        with open(output_path, 'rb') as f:
-            data = f.read()
-        data, fernet_len = data.split(b'*****')
-        data, fernet_key_encrypted = data[:-256], data[-256:]
-        private_rsa = serialization.load_pem_private_key(
-            str_rsa_private,
-            password=None,
-            backend=default_backend()
-        )
-        fernet_key = private_rsa.decrypt(
-            fernet_key_encrypted,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-        fernet = Fernet(fernet_key)
-        decrypted_data = fernet.decrypt(data).decode()
-        # os.remove(output_path)
-        return decrypted_data
-
     def save_results_to_excel(
             self, str_rsa_private: str = "", judges: dict = None):
         """Метод для сохранения результатов голосования в excel файл"""
@@ -287,6 +261,32 @@ lx8fAoXVy9Dac4OTr4Hy
             return return_code
         except Exception as e:
             return str(e)
+
+    def __read_data(self, login: str, str_rsa_private: bytes):
+        """Метод для чтения данных о голосовании по логину"""
+        filename = self.filename_template.substitute(login=login)
+        output_path = os.path.join(self.output_dir, filename)
+        with open(output_path, 'rb') as f:
+            data = f.read()
+        data, fernet_len = data.split(b'*****')
+        data, fernet_key_encrypted = data[:-256], data[-256:]
+        private_rsa = serialization.load_pem_private_key(
+            str_rsa_private,
+            password=None,
+            backend=default_backend()
+        )
+        fernet_key = private_rsa.decrypt(
+            fernet_key_encrypted,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+        fernet = Fernet(fernet_key)
+        decrypted_data = fernet.decrypt(data).decode()
+        # os.remove(output_path)
+        return decrypted_data
 
     @staticmethod
     def __create_smb_session():
