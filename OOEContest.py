@@ -16,11 +16,11 @@ class OOEContest:
     def __init__(self, str_rsa_public=""):
         """Класс для работы с голосованием по конкурсу"""
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        self.output_path = current_dir
-        self.fir_output_path = r'alt'
+        self.output_dir = current_dir
+        self.fir_output_dir = r'alt'
         self.filename_template = Template('$login.enc')
 
-        self.__judges_dict = {
+        self.__judges = {
             'login1': 'judge1name',
             'login2': 'judge2name',
             'login3': 'judge3name',
@@ -30,7 +30,7 @@ class OOEContest:
             'login7': 'judge7name',
             'login8': 'judge8name',
         }
-        self.__participants_dict = {
+        self.__participants = {
             'participant1': 'partname1',
             'participant2': 'partname2',
             'participant3': 'partname3',
@@ -117,7 +117,7 @@ lx8fAoXVy9Dac4OTr4Hy
         return str(param)
 
     @staticmethod
-    def showVersion():
+    def showVersion():  # noqa
         """Версия программы для AKU5"""
         return 'OOEContest 2024-08-16 v0.10'
 
@@ -146,8 +146,8 @@ lx8fAoXVy9Dac4OTr4Hy
                     + f'*****{str(len(fernet_key_encrypted))}'.encode()
             )
             filename = self.filename_template.substitute(login=login)
-            path = os.path.join(self.output_path, filename)
-            with open(path, 'wb') as f:
+            output_path = os.path.join(self.output_dir, filename)
+            with open(output_path, 'wb') as f:
                 f.write(encrypted_with_key)
             if self.__default_str_rsa_public == self.__str_rsa_public:
                 return '300'
@@ -172,8 +172,8 @@ lx8fAoXVy9Dac4OTr4Hy
     def __read_data(self, login: str, str_rsa_private: bytes):
         """Метод для чтения данных о голосовании по логину"""
         filename = self.filename_template.substitute(login=login)
-        path = os.path.join(self.output_path, filename)
-        with open(path, 'rb') as f:
+        output_path = os.path.join(self.output_dir, filename)
+        with open(output_path, 'rb') as f:
             data = f.read()
         data, fernet_len = data.split(b'*****')
         data, fernet_key_encrypted = data[:-256], data[-256:]
@@ -192,7 +192,7 @@ lx8fAoXVy9Dac4OTr4Hy
         )
         fernet = Fernet(fernet_key)
         decrypted_data = fernet.decrypt(data).decode()
-        # os.remove(path)
+        # os.remove(output_path)
         return decrypted_data
 
     def save_results_to_excel(
@@ -210,13 +210,13 @@ lx8fAoXVy9Dac4OTr4Hy
             session.disconnect()
         try:
             if not judges:
-                judges = self.__judges_dict
+                judges = self.__judges
             columns = (
                     ['Ранг']
                     + list(judges.values())
                     + ['Сумма голосов']
             )
-            index = list(self.__participants_dict.values()) + ['Сумма голосов']
+            index = list(self.__participants.values()) + ['Сумма голосов']
             result_df = pd.DataFrame(index=index, columns=columns)
             for login in judges:
                 judge_name = judges.get(login)
@@ -227,14 +227,14 @@ lx8fAoXVy9Dac4OTr4Hy
                     print(e)
                     continue
                 for participant in judge_data:
-                    participant_name = self.__participants_dict.get(participant)
+                    participant_name = self.__participants.get(participant)
                     result_df.loc[participant_name, judge_name] = 1
                 result_df.loc['Сумма голосов', judge_name] = result_df[
                     judge_name].sum()
             result_df['Сумма голосов'] = result_df.sum(axis=1)
 
             result_output_path = os.path.join(
-                self.fir_output_path, 'results.xlsx')
+                self.fir_output_dir, 'results.xlsx')
             byte_stream = io.BytesIO()
             result_df.to_excel(byte_stream)
             byte_stream.seek(0)
