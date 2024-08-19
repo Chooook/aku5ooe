@@ -311,26 +311,26 @@ V1uslhcFh+ZzIqSM8vi/
         judge_data = {}
 
         for filename, filepath in self.__find_judge_files(login).items():
-            # try:
-            with open(filepath, 'rb') as f:
-                data = f.read()
-            data = data.split(b'*****')[0]
-            votes, fernet_key_encrypted = data[:-256], data[-256:]
-            fernet_key = private_rsa.decrypt(
-                fernet_key_encrypted,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA256(),
-                    label=None
+            try:
+                with open(filepath, 'rb') as f:
+                    data = f.read()
+                data = data.split(b'*****')[0]
+                votes, fernet_key_encrypted = data[:-256], data[-256:]
+                fernet_key = private_rsa.decrypt(
+                    fernet_key_encrypted,
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                        algorithm=hashes.SHA256(),
+                        label=None
+                    )
                 )
-            )
-            fernet = Fernet(fernet_key)
-            decrypted_data = fernet.decrypt(votes).decode().split('\n')
-            judge_data[filename] = decrypted_data
-            # except Exception as e:
+                fernet = Fernet(fernet_key)
+                decrypted_data = fernet.decrypt(votes).decode().split('\n')
+                judge_data[filename] = decrypted_data
+            except Exception as e:
                 # logging.error(f'Error while reading data: {e}')
-                # print(e)
-                # continue
+                print(e)
+                continue
         return judge_data
 
     def __find_judge_files(self, login):
