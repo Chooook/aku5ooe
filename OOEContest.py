@@ -1,6 +1,8 @@
 """Модуль для сохранения результатов соревнования"""
 import io
+import logging
 import os
+import traceback
 from string import Template
 
 import pandas as pd
@@ -20,9 +22,23 @@ if DEBUG:
 
 
 class OOEContest:
-    def __init__(self, str_rsa_public=''):
+    def __init__(self, str_rsa_public='', logging_level=40):
         """Класс для работы с голосованием по конкурсу"""
+        # logging level:
+        #  DEBUG = 10
+        #  INFO = 20
+        #  ERROR = 40
         current_dir = os.path.dirname(os.path.realpath(__file__))
+        logging.basicConfig(
+            filename=os.path.join(current_dir, 'contest_log.log'),
+            level=logging_level,
+            format=('%(process)d - %(asctime)s - %(levelname)s: '
+                    '%(funcName)s - %(message)s')
+        )
+
+        logging.info('Init OOEContest. '
+                     f'logging_level={logging_level}. DEBUG={DEBUG}')
+        logging.debug(f'str_rsa_public={str_rsa_public}')
         self.output_dir = current_dir
         self.fir_output_dir = r'alt'
         self.filename_template = Template('${login}_${suffix}.enc')
@@ -115,6 +131,7 @@ V1uslhcFh+ZzIqSM8vi/
         self.__str_rsa_public = str_rsa_public
         if not self.__str_rsa_public:
             self.__str_rsa_public = self.__default_str_rsa_public
+            logging.info('Used default public key')
 
         try:
             self.__rsa_public = serialization.load_pem_public_key(
@@ -122,23 +139,27 @@ V1uslhcFh+ZzIqSM8vi/
                 backend=default_backend()
             )
         except ValueError as e:
-            # logging.error(f'Not valid public key: {e}')
+            logging.error(f'Not valid public key: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise ValueError(f'Not valid public key: {e}')
         except Exception as e:
-            # logging.error(f'Error while loading public key: {e}')
+            logging.error(f'Error while loading public key: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise ValueError(f'Error while loading public key: {e}')
 
     @staticmethod
     def check_return(param):
+        logging.debug(f'Test param={param}')
         return str(param)
 
     @staticmethod
     def showVersion():  # noqa
         """Версия программы для AKU5"""
-        return 'OOEContest 2024-08-16 v0.10'
+        return 'OOEContest 2024-08-19 v0.11'
 
     def save_data(self, login: str, data: list):
         """Метод для сохранения данных о голосовании по логину судьи"""
+        logging.info(f'Saving data for {login}')
         try:
             participants = [
                 f'participant{self.__get_participant_num(checkbox)}'
@@ -146,7 +167,8 @@ V1uslhcFh+ZzIqSM8vi/
             ]
             votes = '\n'.join(participants)
         except Exception as e:
-            # logging.error(f'Error while parsing data: {e}')
+            logging.error(f'Error while parsing data: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise Exception(f'Error while parsing data: {e}')
 
         fernet, encrypted_fernet_key = self.__get_fernet()
@@ -161,14 +183,18 @@ V1uslhcFh+ZzIqSM8vi/
         try:
             with open(output_path, 'wb') as f:
                 f.write(encrypted_votes_and_key)
-                # logging
         except Exception as e:
-            # logging
+            logging.error(f'Error while saving data: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise Exception(f'Error while saving data: {e}')
         if self.__default_str_rsa_public == self.__str_rsa_public:
-            # logging
+            logging.info(
+                f'Data saved to {output_path}. Used default public key')
+            logging.debug(f'public_key={self.__str_rsa_public}')
             return '300'
-        # logging
+        logging.info(
+            f'Data saved to {output_path}. Used new public key')
+        logging.debug(f'public_key={self.__str_rsa_public}')
         return '200'
 
     def __get_fernet(self):
@@ -186,6 +212,7 @@ V1uslhcFh+ZzIqSM8vi/
                 label=None
             )
         )
+        logging.debug('Fernet key generated')
         return fernet, encrypted_fernet_key
 
     @staticmethod
@@ -212,23 +239,26 @@ V1uslhcFh+ZzIqSM8vi/
                 login=login, suffix=suffix)
             output_path = os.path.join(self.output_dir, filename)
 
+        logging.debug(f'Unique filename created: {filename}')
         return output_path
 
     def save_results_to_excel(
             self, str_rsa_private: str = '', judges: dict = None, rnd=''):
         """Метод для сохранения результатов голосования в excel файл"""
         # judges = '{"login1": "judge1name", "login2": "judge2name",...}'
-        # logging.info(f'Called save_results_to_excel({judges}, {rnd})')
+        logging.info(f'Called save_results_to_excel({judges}, {rnd})')
+        logging.debug(f'judges={judges}, rnd={rnd})')
         rsa_private_filepath = str_rsa_private  # TODO переименовать переменную
         if not rsa_private_filepath:
             bytes_rsa_private = self.__default_str_rsa_private.encode()
+            logging.info('Using default private rsa')
         else:
+            logging.info('Using new private rsa')
             bytes_rsa_private = self.__get_rsa_from_file(rsa_private_filepath)
         private_rsa = self.__get_rsa_from_value(bytes_rsa_private)
 
         if not judges or not isinstance(judges, dict):
-            # logging.info(f'Using default judges')
-            # print(f'Using default judges')
+            logging.info(f'Using default judges')
             judges = self.__judges
 
         all_data = {}
@@ -246,18 +276,23 @@ V1uslhcFh+ZzIqSM8vi/
             with open_file(result_output_path, 'wb') as f:
                 f.write(byte_stream.read())
         except Exception as e:
-            # logging.error(f'Error while saving results: {e}')
+            logging.error(f'Error while saving results: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             return f'Error while saving results: {e}'
         finally:
             if session:
                 session.disconnect()
+                logging.debug('Samba session disconnected')
             byte_stream.close()
             smbclient.reset_connection_cache()
+            logging.debug('Called reset_connection_cache')
 
         if bytes_rsa_private == self.__default_str_rsa_private.encode():
-            # logging
+            logging.info(
+                f'Excel successfully created')
             return '300'
-        # logging
+        logging.info(
+            f'Excel successfully created')
         return '200'
 
     def __get_rsa_from_file(self, rsa_filepath: str):
@@ -266,13 +301,16 @@ V1uslhcFh+ZzIqSM8vi/
         try:
             with open_file(rsa_filepath, 'rb') as f:
                 bytes_rsa_private = f.read()
+            logging.info('Successfully read rsa from file')
             return bytes_rsa_private
         except Exception as e:
-            # logging.error(f'Error while reading rsa-key from file: {e}')
+            logging.error(f'Error while reading rsa-key from file: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise(SMBException(f'Error while reading rsa-key from file: {e}'))
         finally:
             if session:
                 session.disconnect()
+                logging.debug('Samba session disconnected')
 
     @staticmethod
     def __create_smb_session():
@@ -285,9 +323,11 @@ V1uslhcFh+ZzIqSM8vi/
                 server=smb_server,
                 username=smb_user,
                 password=smb_pass)
+            logging.info('Samba session created')
             return session
         except Exception as e:
-            print(e)
+            logging.error(f'Error while creating samba session: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             pass
 
     @staticmethod
@@ -298,16 +338,20 @@ V1uslhcFh+ZzIqSM8vi/
                 password=None,
                 backend=default_backend()
             )
+            logging.info('Successfully serialized rsa key from value')
             return private_rsa
         except ValueError as e:
-            # logging.error(f'Not valid public key: {e}')
+            logging.error(f'Not valid public key: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise ValueError(f'Not valid private key: {e}')
         except Exception as e:
-            # logging.error(f'Error while loading public key: {e}')
+            logging.error(f'Error while loading public key: {e}')
+            logging.error(f'Traceback: {traceback.format_exc()}')
             raise ValueError(f'Error while loading private key: {e}')
 
     def __read_data(self, login: str, private_rsa):
         """Метод для чтения данных о голосовании по логину"""
+        logging.debug(f'Started reading {login} data')
         judge_data = {}
 
         for filename, filepath in self.__find_judge_files(login).items():
@@ -328,9 +372,11 @@ V1uslhcFh+ZzIqSM8vi/
                 decrypted_data = fernet.decrypt(votes).decode().split('\n')
                 judge_data[filename] = decrypted_data
             except Exception as e:
-                # logging.error(f'Error while reading data: {e}')
-                print(e)
+                logging.error(f'Error while reading {login} data: {e}')
+                logging.error(f'Traceback: {traceback.format_exc()}')
                 continue
+        logging.debug(
+            f'Successfully read {login} data in {len(judge_data)} files')
         return judge_data
 
     def __find_judge_files(self, login):
@@ -346,11 +392,13 @@ V1uslhcFh+ZzIqSM8vi/
                     filepath = os.path.join(self.output_dir, file)
                     matching_files[file_num] = filepath
 
+        logging.debug(f'Found {len(matching_files)} files for {login}')
         return matching_files
 
     def __build_results_dataframe(self, all_data):
         # Если писать все данные из всех файлов, то какие оценки учитывать,
         #  а какие нет, если по каждому судье будет несколько файлов
+        logging.debug('Results dataframe building started')
         index = list(self.__participants.values()) + ['Сумма голосов']
         judges_list = []
         for judge_name, judge_data in all_data.items():
@@ -368,4 +416,6 @@ V1uslhcFh+ZzIqSM8vi/
                 result_df.loc['Сумма голосов', judge_col] = result_df[
                     judge_col].sum()
         result_df['Сумма голосов'] = result_df.sum(axis=1)
+
+        logging.debug('Results dataframe successfully built')
         return result_df
