@@ -141,12 +141,13 @@ function updateCount() {
 function updateButtonState() {
   const button = document.getElementById('btn-end-vote');
   let count = document.getElementById('count').innerText;
-  if (count === '15/15') {
+  let remainCount = document.getElementById('span-left').innerText;
+  if (count === '15/15' && remainCount === '0') {
     button.disabled = false; // Активируем кнопку
     button.title = ''; // Убираем подсказку, когда кнопка активна
   } else {
     button.disabled = true; // Деактивируем кнопку
-    button.title = 'Необходимо 15 положительных голосов'; // Устанавливаем подсказку
+    button.title = 'Необходимо 15 положительных и 15 отрицательных голосов'; // Устанавливаем подсказку
   }
 }
 
@@ -226,7 +227,6 @@ function countAll(checkboxes) {
 }
 
 function showContent(buttonId) {
-  
   let num = buttonId.replace(/[^0-9]/g, '');
   document.querySelectorAll('.content-section').forEach((section) => {
     section.style.display = 'none';
@@ -259,42 +259,41 @@ function showParticipantInformation(participant) {
 }
 
 const participants = [
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
-                "participant",
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
+  'participant',
 ];
 
 const participantsInfo = {
-  'participant': {
-    information:
-      'position',
+  participant: {
+    information: 'position',
   },
 };
 
@@ -355,7 +354,7 @@ function createMenuItems() {
     newForm2.appendChild(newInput2);
 
     let newLabel2 = document.createElement('label');
-    newLabel2.className = 'form-check-label';
+    newLabel2.className = 'form-check-label form-check-label-dislike';
     newLabel2.htmlFor = 'checkbox' + (index + 1) + '_2';
     newForm2.appendChild(newLabel2);
 
@@ -373,6 +372,28 @@ function createMenuItems() {
     participantImage.style.width = '1000px';
   });
 }
+
+// скрытие и показ слайдера увеличения документа
+const documentRangeTriangle = document.querySelector(
+  '.document-range-triangle-down'
+);
+const formRange = document.querySelector('.form-range');
+documentRangeTriangle.addEventListener('click', () => {
+  formRange.classList.toggle('form-range-invisible');
+  if (
+    Array.from(documentRangeTriangle.classList).includes(
+      'document-range-triangle-down'
+    )
+  ) {
+    documentRangeTriangle.classList.remove('document-range-triangle-down');
+    documentRangeTriangle.classList.add('document-range-triangle-up');
+    contentCenter.style.height = '95%';
+  } else {
+    documentRangeTriangle.classList.remove('document-range-triangle-up');
+    documentRangeTriangle.classList.add('document-range-triangle-down');
+    contentCenter.style.height = '90%';
+  }
+});
 
 ///////////////////
 

@@ -18,8 +18,8 @@
     <link href="bootstrap.min.css" rel="stylesheet" />
     <link href="all.min.css" rel="stylesheet" />
     <link href="lpp-semifinal.css" rel="stylesheet" />
-    	<script src="../../resources/assets/external/requirejs/require.js"></script>
-        <script src="links.js"></script>
+    <script src="../../resources/assets/external/requirejs/require.js"></script>
+    <script src="links.js"></script>
     <script src="frontend.js" defer></script>
   </head>
   <body>
@@ -33,7 +33,7 @@
       <button
         id="btn-end-vote"
         class="btn btn-custom"
-        title="Необходимо 15 положительных голосов"
+        title="Необходимо 15 положительных и 15 отрицательных голосов"
         disabled
       >
         Завершить оценку
@@ -61,7 +61,7 @@
       </div>
 
       <div class="content-center">
-        <div id="content0" >Загрузка данных...</div>
+        <div id="content0">Загрузка данных...</div>
         <div id="content1" class="content-section">
           <img class="img-resize" src="test.jpg" alt="" />
         </div>
@@ -181,9 +181,13 @@
           <img class="img-resize" src="test.jpg" alt="" />
           <br />
         </div>
-	    
+
         <div class="document-range">
-          <p style="text-align: center">Размер документа</p>
+          <div class="document-range-triangle-wrapper">
+            <div style="text-align: center">Размер документа</div>
+            <div class="document-range-triangle-down"></div>
+          </div>
+
           <input
             class="form-range"
             type="range"
